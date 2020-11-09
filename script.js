@@ -26,7 +26,9 @@ setInterval(() => {
   for (const [x, y] of posesForCurrentTime[0]) {
     // currentMidiOutput.playNote(Math.floor(x * 128), channelI)
     currentMidiOutput.sendControlChange(0, x * 128, channelI)
-    channelI++;
+    currentMidiOutput.sendControlChange(0, y * 128, channelI + 1)
+
+    channelI+=2;
   }
 }, 16)
 
@@ -67,6 +69,7 @@ function findClosestPoses(currentTime) {
 
 
 
+// Add the list of outputs
 WebMidi.enable(err => {
   console.log(err)
   
@@ -77,6 +80,4 @@ WebMidi.enable(err => {
   }
   
   currentMidiOutput = WebMidi.outputs[0]
-  
-  
 })
