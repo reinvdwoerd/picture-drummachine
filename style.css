@@ -22,6 +22,11 @@ main .inner {
   padding: 25px;
 }
 
+.midi {
+  overflow-y: scroll;
+  padding-bottom: 100px;
+}
+
 
 .joint {
   margin-top: 5px;
