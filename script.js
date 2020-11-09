@@ -1,5 +1,9 @@
-/* If you're feeling fancy you can add interactivity 
-    to your site with Javascript */
+const $video = document.querySelector('video')
+const $currentTime = document.querySelector('.current-time')
+const $currentFrame = document.querySelector('.current-frame')
 
-// prints "hi" in the browser's dev tools console
-console.log("hi");
+setInterval(() => {
+  $currentTime.innerText = $video = 
+  
+  
+}, 16)
