@@ -29,7 +29,11 @@ setInterval(() => {
     // currentMidiOutput.playNote(Math.floor(x * 128), channelI)
     currentMidiOutput.sendControlChange(0, x * 128, channelI)
     currentMidiOutput.sendControlChange(0, y * 128, channelI + 1)
+    
+    document.querySelector(`.joint[data-i="${channelI / 2}"] .x`).innerText = Math.round(x * 128)
+    document.querySelector(`.joint[data-i="${channelI / 2}"] .y`).innerText = Math.round(y * 128)
 
+    
     channelI+=2;
   }
 }, 16)
@@ -81,8 +85,16 @@ WebMidi.enable(err => {
   // Add the channels/joints
   for (let i = 0; i < 17; i++) {
     $joints.innerHTML += `
-      <div class="joint">
+      <div class="joint" data-i="${i}">
         <div class="name">joint ${i + 1}</div>
+        
+        <span class="label">x:<span>
+        <span class="x"></span>
+        
+        <br>
+
+        <span class="label">y:<span>
+        <span class="y"></span>
       </div>
     `
   }

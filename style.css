@@ -3,14 +3,29 @@ body {
   grid-template-columns: 2fr 1fr;
   height: 100vh;
   margin: 0;
+  font-family: sans-serif;
 }
+
+video {
+  margin: auto;
+  display: flex;
+}
+
 
 .midi {
   border-left: 1px solid grey;
   padding: 25px;
 }
 
-video {
-  margin: auto;
-  display: flex;
+
+.joint {
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid lightgray;
+}
+
+.joint .name {
+  text-transform: uppercase;
+  opacity: 0.6;
+  letter-spacing: .1em;
 }
