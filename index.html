@@ -20,17 +20,21 @@
       
       <video controls autoplay muted loop src="https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2FAdobeStock_267867790_Video_HD_Preview.mov?v=1604951052391"></video>
 
-      <div class="playback-speed-container">
-        <input class="playback-speed" type="range" min="0.125" max="4" value="1" step="0.125"/>  
-        <label class="playback-speed-label"></label>
+      <div class="inner">
+        <div class="playback-speed-container">
+<!--           <div class="label">playback speed</div> -->
+          <input class="playback-speed" type="range" min="0.125" max="4" value="1" step="0.125"/>  
+          <label class="playback-speed-label"></label>
+        </div>
+
+
+        <code class="info">
+          <div class="current-time"></div>
+          <div class="current-frame"></div>
+          <div class="pose-data"></div>
+        </code>
       </div>
-
-
-      <code class="info">
-        <div class="current-time"></div>
-        <div class="current-frame"></div>
-        <div class="pose-data"></div>
-      </code>
+      
     </main>
 
 
