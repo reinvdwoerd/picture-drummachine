@@ -13,11 +13,21 @@ let currentMidiOutput = null
 
 
 setInterval(() => {
+  // Display time
   $currentTime.innerText = $video.currentTime
   $currentFrame.innerText = Math.floor($video.currentTime * 29.97)
   
+  // Get pose data
   const posesForCurrentTime = findClosestPoses($video.currentTime)
-  $poseData.innerText = JSON.stringify(posesForCurrentTime)
+  $poseData.innerText = JSON.stringify(posesForCurrentTime[0])
+  
+  // Send the midi
+  let channelI = 0
+  for (const [x, y] of posesForCurrentTime[0]) {
+    // currentMidiOutput.playNote(Math.floor(x * 128), channelI)
+    currentMidiOutput.sendControlChange(0, x * 128, channelI)
+    channelI++;
+  }
 }, 16)
 
 
@@ -30,7 +40,12 @@ $playbackSpeed.oninput = () => {
 window.onload = () => {
   
 }
-  
+
+
+$midiOutputSelect.onchange = () => {
+  currentMidiOutput = WebMidi.getOutputByName($midiOutputSelect.value)
+  console.log("changed output to: ", currentMidiOutput.name)
+}
   
 
 function findClosestPoses(currentTime) {
@@ -56,9 +71,12 @@ WebMidi.enable(err => {
   console.log(err)
   
   for (const output of WebMidi.outputs) {
-    $midiOutputSelect.innerHTML = `
-      <div class=""></div>
+    $midiOutputSelect.innerHTML += `
+      <option class="">${output.name}</option>
     `  
   }
+  
+  currentMidiOutput = WebMidi.outputs[0]
+  
   
 })
