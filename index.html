@@ -11,14 +11,19 @@
     <link rel="stylesheet" href="/style.css">
     
     <!-- import the webpage's javascript file -->
+    <script src="/pose-values.js"></script>
     <script src="/script.js" defer></script>
   </head>  
   <body>
     <div>
       <video controls autoplay src="https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2FSide%20View%20of%20a%20Man%20Stock%20Footage%20Video%20(100%25%20Royalty-free)%2015663874%20%7C%20Shutterstock.mp4?v=1604927435170"></video>
+      
+      <input type="range" min="0.125"/>
+      
       <div class="info">
         <div class="current-time"></div>
         <div class="current-frame"></div>
+        <div class="pose-data"></div>
       </div>
     
     </div>
