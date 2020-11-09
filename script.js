@@ -1,4 +1,7 @@
 const $video = document.querySelector('video')
+const $playbackSpeed = document.querySelector('.playback-speed')
+const $playbackSpeedLabel = document.querySelector('.playback-speed-label')
+
 const $currentTime = document.querySelector('.current-time')
 const $currentFrame = document.querySelector('.current-frame')
 const $poseData = document.querySelector('.pose-data')
@@ -8,8 +11,14 @@ setInterval(() => {
   $currentFrame.innerText = Math.floor($video.currentTime * 29.97)
   
   const posesForCurrentTime = findClosestPoses($video.currentTime)
-  $poseData.innerText = posesForCurrentTime
+  $poseData.innerText = JSON.stringify(posesForCurrentTime)
 }, 16)
+
+
+$playbackSpeed.oninput = window.onload = () => {
+  console.log($playbackSpeed.value)
+  $video.playbackRate = $playbackSpeedLabel.innerText = $playbackSpeed.value
+}
 
 
 
