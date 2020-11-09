@@ -2,9 +2,15 @@ const $video = document.querySelector('video')
 const $playbackSpeed = document.querySelector('.playback-speed')
 const $playbackSpeedLabel = document.querySelector('.playback-speed-label')
 
+const $midiOutputSelect = document.querySelector('.midi select.outputs')
+
 const $currentTime = document.querySelector('.current-time')
 const $currentFrame = document.querySelector('.current-frame')
 const $poseData = document.querySelector('.pose-data')
+
+
+let currentMidiOutput = null
+
 
 setInterval(() => {
   $currentTime.innerText = $video.currentTime
@@ -15,12 +21,17 @@ setInterval(() => {
 }, 16)
 
 
-$playbackSpeed.oninput = window.onload = () => {
-  console.log($playbackSpeed.value)
+
+$playbackSpeed.oninput = () => {
   $video.playbackRate = $playbackSpeedLabel.innerText = $playbackSpeed.value
 }
 
 
+window.onload = () => {
+  
+}
+  
+  
 
 function findClosestPoses(currentTime) {
   let minDifference = Number.MAX_VALUE
@@ -38,3 +49,16 @@ function findClosestPoses(currentTime) {
   
   return closestPoses
 }
+
+
+
+WebMidi.enable(err => {
+  console.log(err)
+  
+  for (const output of WebMidi.outputs) {
+    $midiOutputSelect.innerHTML = `
+      <div class=""></div>
+    `  
+  }
+  
+})
