@@ -91,13 +91,13 @@ WebMidi.enable(err => {
         <div class="name">joint ${i + 1}</div>
         
         <div class="grid">
-          <span class="label">x:<span>
+          <span class="label">x:</span>
           <span class="x"></span>
           <progress class="progress-x" min="0" max="128" value="70"></progress>
         </div>
 
         <div class="grid">
-          <span class="label">y:<span>
+          <span class="label">y:</span>
           <span class="y"></span>
           <progress class="progress-y" min="0" max="128" value="70"></progress>
         </div>
