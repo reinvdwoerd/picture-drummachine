@@ -3,6 +3,7 @@ const $playbackSpeed = document.querySelector('.playback-speed')
 const $playbackSpeedLabel = document.querySelector('.playback-speed-label')
 
 const $midiOutputSelect = document.querySelector('.midi select.outputs')
+const $joints = document.querySelector('.midi .joints')
 
 const $currentTime = document.querySelector('.current-time')
 const $currentFrame = document.querySelector('.current-frame')
@@ -23,6 +24,7 @@ setInterval(() => {
   
   // Send the midi
   let channelI = 0
+  console.log(posesForCurrentTime[0].length)
   for (const [x, y] of posesForCurrentTime[0]) {
     // currentMidiOutput.playNote(Math.floor(x * 128), channelI)
     currentMidiOutput.sendControlChange(0, x * 128, channelI)
@@ -36,11 +38,6 @@ setInterval(() => {
 
 $playbackSpeed.oninput = () => {
   $video.playbackRate = $playbackSpeedLabel.innerText = $playbackSpeed.value
-}
-
-
-window.onload = () => {
-  
 }
 
 
@@ -69,10 +66,10 @@ function findClosestPoses(currentTime) {
 
 
 
-// Add the list of outputs
 WebMidi.enable(err => {
   console.log(err)
   
+  // Add the list of outputs
   for (const output of WebMidi.outputs) {
     $midiOutputSelect.innerHTML += `
       <option class="">${output.name}</option>
@@ -80,4 +77,13 @@ WebMidi.enable(err => {
   }
   
   currentMidiOutput = WebMidi.outputs[0]
+
+  // Add the channels/joints
+  for (let i = 0; i < 17; i++) {
+    $joints.innerHTML += `
+      <div class="joint">
+        <div class="name">joint ${i + 1}</div>
+      </div>
+    `
+  }
 })
