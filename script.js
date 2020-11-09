@@ -31,9 +31,11 @@ setInterval(() => {
     currentMidiOutput.sendControlChange(0, y * 128, channelI + 1)
     
     document.querySelector(`.joint[data-i="${channelI / 2}"] .x`).innerText = Math.round(x * 128)
-    document.querySelector(`.joint[data-i="${channelI / 2}"] .y`).innerText = Math.round(y * 128)
+    document.querySelector(`.joint[data-i="${channelI / 2}"] .progress-x`).value = Math.round(x * 128)
 
-    
+    document.querySelector(`.joint[data-i="${channelI / 2}"] .y`).innerText = Math.round(y * 128)
+    document.querySelector(`.joint[data-i="${channelI / 2}"] .progress-y`).value = Math.round(y * 128)
+
     channelI+=2;
   }
 }, 16)
@@ -88,13 +90,17 @@ WebMidi.enable(err => {
       <div class="joint" data-i="${i}">
         <div class="name">joint ${i + 1}</div>
         
-        <span class="label">x:<span>
-        <span class="x"></span>
-        
-        <br>
+        <div class="grid">
+          <span class="label">x:<span>
+          <span class="x"></span>
+          <progress class="progress-x" min="0" max="128" value="70"></progress>
+        </div>
 
-        <span class="label">y:<span>
-        <span class="y"></span>
+        <div class="grid">
+          <span class="label">y:<span>
+          <span class="y"></span>
+          <progress class="progress-y" min="0" max="128" value="70"></progress>
+        </div>
       </div>
     `
   }
