@@ -23,21 +23,33 @@ setInterval(() => {
   $poseData.innerText = JSON.stringify(posesForCurrentTime[0])
   
   // Send the midi
-  let channelI = 0
-  console.log(posesForCurrentTime[0].length)
-  for (const [x, y] of posesForCurrentTime[0]) {
-    // currentMidiOutput.playNote(Math.floor(x * 128), channelI)
-    currentMidiOutput.sendControlChange(0, x * 128, channelI)
-    currentMidiOutput.sendControlChange(0, y * 128, channelI + 1)
+  if (!$video.paused) {
+    // Display time
+    $currentTime.innerText = $video.currentTime
+    $currentFrame.innerText = Math.floor($video.currentTime * 29.97)
+
+    // Get pose data
+    const posesForCurrentTime = findClosestPoses($video.currentTime)
+    $poseData.innerText = JSON.stringify(posesForCurrentTime[0])
     
-    document.querySelector(`.joint[data-i="${channelI / 2}"] .x`).innerText = Math.round(x * 128)
-    document.querySelector(`.joint[data-i="${channelI / 2}"] .progress-x`).value = Math.round(x * 128)
+    let channelI = 0
+    console.log(posesForCurrentTime[0].length)
+   
+    for (const [x, y] of posesForCurrentTime[0]) {
+      // currentMidiOutput.playNote(Math.floor(x * 128), channelI)
+      currentMidiOutput.sendControlChange(0, x * 128, channelI)
+      currentMidiOutput.sendControlChange(0, y * 128, channelI + 1)
 
-    document.querySelector(`.joint[data-i="${channelI / 2}"] .y`).innerText = Math.round(y * 128)
-    document.querySelector(`.joint[data-i="${channelI / 2}"] .progress-y`).value = Math.round(y * 128)
+      document.querySelector(`.joint[data-i="${channelI / 2}"] .x`).innerText = Math.round(x * 128)
+      document.querySelector(`.joint[data-i="${channelI / 2}"] .progress-x`).value = Math.round(x * 128)
 
-    channelI+=2;
+      document.querySelector(`.joint[data-i="${channelI / 2}"] .y`).innerText = Math.round(y * 128)
+      document.querySelector(`.joint[data-i="${channelI / 2}"] .progress-y`).value = Math.round(y * 128)
+
+      channelI+=2;
+    }
   }
+ 
 }, 16)
 
 
@@ -72,6 +84,13 @@ function findClosestPoses(currentTime) {
 
 
 
+function sendTest(i) {
+  
+   currentMidiOutput.sendControlChange(0, 0, i)
+}
+
+
+
 WebMidi.enable(err => {
   console.log(err)
   
@@ -85,7 +104,7 @@ WebMidi.enable(err => {
   currentMidiOutput = WebMidi.outputs[0]
 
   // Add the channels/joints
-  
+  let channelI = 0
   for (let i = 0; i < 17; i++) {
     $joints.innerHTML += `
       <div class="joint" data-i="${i}">
@@ -95,15 +114,18 @@ WebMidi.enable(err => {
           <span class="label">x:</span>
           <span class="x"></span>
           <progress class="progress-x" min="0" max="128" value="70"></progress>
-          <button onclick="sendTestS"></button>
+          <button onclick="sendTest(${channelI})">test</button>
         </div>
 
         <div class="grid">
           <span class="label">y:</span>
           <span class="y"></span>
           <progress class="progress-y" min="0" max="128" value="70"></progress>
+          <button onclick="sendTest(${channelI + 1})">test</button>
         </div>
       </div>
     `
+    
+    channelI += 2
   }
 })
