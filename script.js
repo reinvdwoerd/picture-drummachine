@@ -85,6 +85,7 @@ WebMidi.enable(err => {
   currentMidiOutput = WebMidi.outputs[0]
 
   // Add the channels/joints
+  
   for (let i = 0; i < 17; i++) {
     $joints.innerHTML += `
       <div class="joint" data-i="${i}">
@@ -94,6 +95,7 @@ WebMidi.enable(err => {
           <span class="label">x:</span>
           <span class="x"></span>
           <progress class="progress-x" min="0" max="128" value="70"></progress>
+          <button onclick="sendTestS"></button>
         </div>
 
         <div class="grid">
