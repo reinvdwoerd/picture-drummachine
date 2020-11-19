@@ -32,26 +32,19 @@ setInterval(() => {
     const posesForCurrentTime = findClosestPoses($video.currentTime)
     $poseData.innerText = JSON.stringify(posesForCurrentTime[0])
     
-    let channelI = 0
     console.log(posesForCurrentTime[0].length)
     
     
     for (let i = 0; i < posesForCurrentTime[0].length; i++) {
-      const [x, y] = posesForCurrentTime[0]
-    }
-   
-    for (const [x, y] of posesForCurrentTime[0]) {
-      // currentMidiOutput.playNote(Math.floor(x * 128), channelI)
-      currentMidiOutput.sendControlChange(channelI, x * 128, 1)
-      currentMidiOutput.sendControlChange(channelI, y * 128, 2)
+      const [x, y] = posesForCurrentTime[0][i];
+      currentMidiOutput.sendControlChange(i, x * 128, 1)
+      currentMidiOutput.sendControlChange(i, y * 128, 2)
 
-      document.querySelector(`.joint[data-i="${channelI}"] .x`).innerText = Math.round(x * 128)
-      document.querySelector(`.joint[data-i="${channelI}"] .progress-x`).value = Math.round(x * 128)
+      document.querySelector(`.joint[data-i="${i}"] .x`).innerText = Math.round(x * 128)
+      document.querySelector(`.joint[data-i="${i}"] .progress-x`).value = Math.round(x * 128)
 
-      document.querySelector(`.joint[data-i="${channelI}"] .y`).innerText = Math.round(y * 128)
-      document.querySelector(`.joint[data-i="${channelI}"] .progress-y`).value = Math.round(y * 128)
-
-      channelI+=1;
+      document.querySelector(`.joint[data-i="${i}"] .y`).innerText = Math.round(y * 128)
+      document.querySelector(`.joint[data-i="${i}"] .progress-y`).value = Math.round(y * 128)
     }
   }
  
