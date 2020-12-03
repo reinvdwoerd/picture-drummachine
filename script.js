@@ -16,6 +16,11 @@ function setup() {
   let canvas = createCanvas(1920, 1080);
   canvas.parent("main");
 
+  // STYLE
+  strokeWeight(5)
+  stroke('white')
+  
+  // VIDEO
   video = createVideo(
     "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303"
   );
@@ -24,7 +29,6 @@ function setup() {
   video.stop();
   video.loop();
   video.hide();
-  video.size(1920, 1080);
 
   video.elt.onloadeddata = () => {
     poseNet = ml5.poseNet(video, () => {
@@ -105,9 +109,9 @@ function drawKeypoints() {
       let keypoint = pose.keypoints[j];
       // Only draw an ellipse is the pose probability is bigger than 0.2
       if (keypoint.score > 0.2) {
-        noStroke();
-        fill(255, 0, 0);
-        ellipse(keypoint.position.x, keypoint.position.y, 10, 10);
+        stroke('black')
+        fill('white')
+        ellipse(keypoint.position.x, keypoint.position.y, 20, 20);
       }
     }
   }
@@ -122,7 +126,8 @@ function drawSkeleton() {
     for (let j = 0; j < skeleton.length; j++) {
       let partA = skeleton[j][0];
       let partB = skeleton[j][1];
-      stroke(255, 0, 0);
+      stroke('white')
+
       line(
         partA.position.x,
         partA.position.y,
