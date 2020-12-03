@@ -2,6 +2,7 @@ let video, poseNet, currentMidiOutput;
 
 const $playbackSpeed = document.querySelector(".playback-speed");
 const $playbackSpeedLabel = document.querySelector(".playback-speed-label");
+const $positionSlider = document.querySelector(".position");
 
 const $midiOutputSelect = document.querySelector(".midi select.outputs");
 const $joints = document.querySelector(".midi .joints");
@@ -30,6 +31,7 @@ function setup() {
   video.stop();
   video.loop();
   video.showControls();
+  video.hide();
 
   video.elt.onloadeddata = () => {
     poseNet = ml5.poseNet(video, () => {
@@ -43,7 +45,8 @@ function setup() {
       // console.log(poses);
 
       // Video position
-      
+      $currentTime.innerText = video.elt.currentTime
+      $currentFrame.innerText = Math.floor(video.elt.currentTime * 29.97)
       
       for (const result of results) {
         const { pose } = result;
@@ -104,7 +107,7 @@ function setup() {
 
 
 function draw() {
-  image(video, 0, 0, video.width, video.height);
+  image(video, 0, 0, width, height);
   console.log("draw...");
   // We can call both functions to draw all keypoints and the skeletons
   drawKeypoints();
@@ -177,8 +180,14 @@ function drawSkeleton() {
 
 
 $playbackSpeed.oninput = () => {
-  $video.playbackRate = $playbackSpeedLabel.innerText = $playbackSpeed.value;
+  video.speed($playbackSpeed.value);
+  $playbackSpeedLabel.innerText = $playbackSpeed.value;
 };
+
+$positionSlider.oninput = () => {
+  video.elt.currentTime = video.elt.
+}
+
 
 $midiOutputSelect.onchange = () => {
   currentMidiOutput = WebMidi.getOutputByName($midiOutputSelect.value);
