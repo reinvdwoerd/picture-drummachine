@@ -3,6 +3,7 @@ let video, poseNet, currentMidiOutput;
 const $playbackSpeed = document.querySelector(".playback-speed");
 const $playbackSpeedLabel = document.querySelector(".playback-speed-label");
 const $positionSlider = document.querySelector(".position");
+const $cachingProgress = document.querySelector("#caching");
 
 const $midiOutputSelect = document.querySelector(".midi select.outputs");
 const $joints = document.querySelector(".midi .joints");
@@ -13,6 +14,8 @@ const $poseData = document.querySelector(".pose-data");
 
 let pose = null;
 let posesByFrameCache = {};
+
+let savedCache = false
 
 async function setup() {
   let canvas = createCanvas(1920, 1080);
@@ -37,6 +40,8 @@ async function setup() {
 
     
     const net = await posenet.load();
+    
+    $cachingProgress.setAttribute('max', video.elt.duration * 29.97)
 
     setInterval(async () => {
       try {
@@ -50,11 +55,17 @@ async function setup() {
         if (posesByFrameCache[currentFrame]) {
           console.log("Cache hit! Current frame is: ", currentFrame)
           pose = posesByFrameCache[currentFrame]
+          
+        // Cache miss!
         } else {
+          console.log("Cache miss: ", currentFrame)
           pose = await net.estimateSinglePose(video.elt, {
             flipHorizontal: false
           }); 
           posesByFrameCache[currentFrame] = pose;
+          $cachingProgress.value = Object.keys(posesByFrameCache).length
+          
+          if (!)
         }
       } catch (e) {
         return
@@ -106,7 +117,7 @@ async function setup() {
             `;
         }
       }
-    }, 16);
+    }, 8);
   };
 
   frameRate(60);
