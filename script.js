@@ -37,6 +37,7 @@ function setup() {
     poseNet = ml5.poseNet(video, () => {
       console.log("model ready");
     });
+    
 
     // This sets up an event that fills the global variable "poses"
     // with an array every time new poses are detected
@@ -45,8 +46,13 @@ function setup() {
       // console.log(poses);
 
       // Video position
-      $currentTime.innerText = video.elt.currentTime
-      $currentFrame.innerText = Math.floor(video.elt.currentTime * 29.97)
+      const currentTime = video.elt.currentTime
+      const currentFrame = Math.floor(currentTime * 29.97)
+      $currentTime.innerText = currentTime
+      $currentFrame.innerText = currentFrame
+      
+      posesByFrameCache[currentFrame] = poses
+      
       
       for (const result of results) {
         const { pose } = result;
@@ -62,7 +68,7 @@ function setup() {
           const x = clamp(position.x / video.width, 0, 1);
           const y = clamp(position.y / video.height, 0, 1);
           
-          console.log(x, y)
+          // console.log(x, y)
           
           if (currentMidiOutput) {
             currentMidiOutput.sendControlChange(i, x * 127, 1)
@@ -108,7 +114,7 @@ function setup() {
 
 function draw() {
   image(video, 0, 0, width, height);
-  console.log("draw...");
+  // console.log("draw...");
   // We can call both functions to draw all keypoints and the skeletons
   drawKeypoints();
   drawSkeleton();
@@ -185,7 +191,7 @@ $playbackSpeed.oninput = () => {
 };
 
 $positionSlider.oninput = () => {
-  video.elt.currentTime = video.elt.
+  video.elt.currentTime = video.elt.duration * $positionSlider.value
 }
 
 
