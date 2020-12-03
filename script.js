@@ -15,15 +15,48 @@ let currentMidiOutput = null
 console.log($video)
 
 $video.addEventListener('loadeddata', () => {
-  const poseNet = ml5.poseNet($video, {detectionType: 'single'}, () => {
+  const poseNet = ml5.poseNet($video, () => {
     console.log("model loaded")
   });
   
   poseNet.on("pose", results => {
     console.log("poses", results)
     
-      if (!$video.paused) {
-        
+      if (!$video.paused && results[0]) {
+        const firstPose = results[0].pose
+        for (const keypoint of firstPose.keypoints) {
+          const joint = document.querySelector(`.joint[data-part="${keypoint.part}"]`)
+          const {x, y} = keypoint.position
+          
+          if (joint) {
+            joint.querySelector(`.x`).innerText = Math.round(x * 128)
+            joint.querySelector(`.progress-x`).value = Math.round(x * 128)
+            joint.querySelector(`.y`).innerText = Math.round(y * 128)
+            joint.querySelector(`.progress-y`).value = Math.round(y * 128)
+          }
+          
+          else {
+            $joints.innerHTML += `
+              <div class="joint" data-part="${keypoint.part}">
+                <div class="name">${keypoint.part}</div>
+
+                <div class="grid">
+                  <span class="label">x:</span>
+                  <span class="x"></span>
+                  <progress class="progress-x" min="0" max="128" value="70"></progress>
+                  <button onclick="sendTest(${keypoint.part}, 1)">test</button>
+                </div>
+
+                <div class="grid">
+                  <span class="label">y:</span>
+                  <span class="y"></span>
+                  <progress class="progress-y" min="0" max="128" value="70"></progress>
+                  <button onclick="sendTest(${keypoint.part}, 2)">test</button>
+                </div>
+             </div>
+            `
+          }
+        }
       }
   });
 })
@@ -52,11 +85,7 @@ setInterval(() => {
 //       currentMidiOutput.sendControlChange(i, x * 128, 1)
 //       currentMidiOutput.sendControlChange(i, y * 128, 2)
 
-//       document.querySelector(`.joint[data-i="${i}"] .x`).innerText = Math.round(x * 128)
-//       document.querySelector(`.joint[data-i="${i}"] .progress-x`).value = Math.round(x * 128)
 
-//       document.querySelector(`.joint[data-i="${i}"] .y`).innerText = Math.round(y * 128)
-//       document.querySelector(`.joint[data-i="${i}"] .progress-y`).value = Math.round(y * 128)
 //     }
   }
  
@@ -113,25 +142,25 @@ WebMidi.enable(err => {
   currentMidiOutput = WebMidi.outputs[0]
 
   // Add the channels/joints
-  for (let i = 0; i < 17; i++) {
-    $joints.innerHTML += `
-      <div class="joint" data-i="${i}">
-        <div class="name">joint ${i + 1}</div>
+//   for (let i = 0; i < 17; i++) {
+//     $joints.innerHTML += `
+//       <div class="joint" data-i="${i}">
+//         <div class="name">joint ${i + 1}</div>
         
-        <div class="grid">
-          <span class="label">x:</span>
-          <span class="x"></span>
-          <progress class="progress-x" min="0" max="128" value="70"></progress>
-          <button onclick="sendTest(${i}, 1)">test</button>
-        </div>
+//         <div class="grid">
+//           <span class="label">x:</span>
+//           <span class="x"></span>
+//           <progress class="progress-x" min="0" max="128" value="70"></progress>
+//           <button onclick="sendTest(${i}, 1)">test</button>
+//         </div>
 
-        <div class="grid">
-          <span class="label">y:</span>
-          <span class="y"></span>
-          <progress class="progress-y" min="0" max="128" value="70"></progress>
-          <button onclick="sendTest(${i}, 2)">test</button>
-        </div>
-      </div>
-    `
- }
+//         <div class="grid">
+//           <span class="label">y:</span>
+//           <span class="y"></span>
+//           <progress class="progress-y" min="0" max="128" value="70"></progress>
+//           <button onclick="sendTest(${i}, 2)">test</button>
+//         </div>
+//       </div>
+//     `
+//  }
 })
