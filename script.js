@@ -10,20 +10,20 @@ const $currentTime = document.querySelector(".current-time");
 const $currentFrame = document.querySelector(".current-frame");
 const $poseData = document.querySelector(".pose-data");
 
-let poses;
+let poses = [];
 
 function setup() {
-  createCanvas(1920, 1080)
-  pixelDensity(1)
-
+  let canvas = createCanvas(1920, 1080)
+  canvas.parent("main")
+  
   video = createVideo(
-    "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303",
-    () => {
+    "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303") => {
+      
       // This sets up an event that fills the global variable "poses"
       // with an array every time new poses are detected
       poseNet.on("pose", results => {
         poses = results;
-        console.log(poses);
+        // console.log(poses);
         
         for (const result of results) {
           const {pose} = result
@@ -71,6 +71,7 @@ function setup() {
       video.volume(0);
       video.stop();
       video.loop();
+      video.hide();
       video.size(1920, 1080)
     }
   );
@@ -79,13 +80,15 @@ function setup() {
   poseNet = ml5.poseNet(video, () => {
     console.log("model ready");
   });
+  
+  frameRate(60)
 }
 
 let currentMidiOutput = null;
 
 function draw() {
-  // image(video, 0, 0, video.width, video.height);
-
+  image(video, 0, 0, video.width, video.height);
+  console.log('draw...')
   // We can call both functions to draw all keypoints and the skeletons
   drawKeypoints();
   drawSkeleton();
