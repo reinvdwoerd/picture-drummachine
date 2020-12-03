@@ -26,6 +26,15 @@ async function setup() {
   let canvas = createCanvas(1920, 1080);
   canvas.parent("main");
   
+  canvas.mousePressed(() => {
+   if (video.elt.paused) {
+      video.loop()
+    } else {
+        video.pause()
+
+    }
+  })
+  
   // STYLE
   strokeWeight(5);
   stroke("white");
@@ -95,7 +104,7 @@ async function setup() {
 
         // console.log(x, y)
 
-        if (currentMidiOutput) {
+        if (currentMidiOutput && !video.elt.paused) {
           currentMidiOutput.sendControlChange(i, x * 127, 1);
           currentMidiOutput.sendControlChange(i, y * 127, 2);
         }
@@ -108,7 +117,7 @@ async function setup() {
         } else {
           $joints.innerHTML += `
               <div class="joint" data-part="${keypoint.part}">
-                <div class="name">${keypoint.part}</div>
+                <div class="name">${i}: ${keypoint.part}</div>
 
                 <div class="grid">
                   <span class="label">x:</span>
@@ -168,6 +177,7 @@ function drawKeypoints() {
     }
   }
 }
+
 
 // A function to draw the skeletons
 function drawSkeleton() {
