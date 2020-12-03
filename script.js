@@ -34,23 +34,33 @@ async function setup() {
   video.hide();
 
   video.elt.onloadeddata = async () => {
+
+    
     const net = await posenet.load();
 
     setInterval(async () => {
-      const pose = await net.estimateSinglePose(video.elt, {
-        flipHorizontal: false
-      });
+      try {
+        // Video position
+        const currentTime = video.elt.currentTime;
+        const currentFrame = Math.floor(currentTime * 29.97);
+        $currentTime.innerText = currentTime;
+        $currentFrame.innerText = currentFrame;
 
-      console.log(pose);
-
-      // Video position
-      const currentTime = video.elt.currentTime;
-      const currentFrame = Math.floor(currentTime * 29.97);
-      $currentTime.innerText = currentTime;
-      $currentFrame.innerText = currentFrame;
-
-      posesByFrameCache[currentFrame] = pose;
-
+        // Cache hit!
+        if (posesByFrameCache[currentFrame]) {
+          console.log("Cache hit! Current frame is: ", currentFrame)
+          pose = posesByFrameCache[currentFrame]
+        } else {
+          pose = await net.estimateSinglePose(video.elt, {
+            flipHorizontal: false
+          }); 
+          posesByFrameCache[currentFrame] = pose;
+        }
+      } catch (e) {
+        return
+      }
+      
+      
       for (let i = 0; i < pose.keypoints.length; i++) {
         // A keypoint is an object describing a body part (like rightArm or leftShoulder)
         const keypoint = pose.keypoints[i];
@@ -59,10 +69,10 @@ async function setup() {
         const joint = document.querySelector(
           `.joint[data-part="${keypoint.part}"]`
         );
-        const x = position.x
-        const y = position.y
+        const x = clamp(position.x / video.width, 0, 1);
+        const y = clamp(position.y / video.height, 0, 1);
 
-        console.log(x, y)
+        // console.log(x, y)
 
         if (currentMidiOutput) {
           currentMidiOutput.sendControlChange(i, x * 127, 1);
@@ -107,7 +117,7 @@ function draw() {
   // console.log("draw...");
   // We can call both functions to draw all keypoints and the skeletons
   drawKeypoints();
-  // drawSkeleton();
+  drawSkeleton();
 }
 
 // A function to draw ellipses over the detected keypoints
@@ -120,32 +130,31 @@ function drawKeypoints() {
       if (keypoint.score > 0.2) {
         stroke("black");
         fill("white");
-        ellipse(keypoint.position.x * width, keypoint.position.y * height, 20, 20);
+        ellipse(keypoint.position.x, keypoint.position.y, 20, 20);
       }
     }
   }
 }
 
 // A function to draw the skeletons
-// function drawSkeleton() {
-//   // Loop through all the skeletons detected
-//   for (let i = 0; i < poses.length; i++) {
-//     let skeleton = poses[i].skeleton;
-//     // For every skeleton, loop through all body connections
-//     for (let j = 0; j < skeleton.length; j++) {
-//       let partA = skeleton[j][0];
-//       let partB = skeleton[j][1];
-//       stroke('white')
-
-//       line(
-//         partA.position.x,
-//         partA.position.y,
-//         partB.position.x,
-//         partB.position.y
-//       );
-//     }
-//   }
-// }
+function drawSkeleton() {
+  if (pose) {
+    // Loop through all the skeletons detected
+    let skeleton = posenet.getAdjacentKeyPoints(pose.keypoints)
+    // For every skeleton, loop through all body connections
+    for (let j = 0; j < skeleton.length; j++) {
+      let partA = skeleton[j][0];
+      let partB = skeleton[j][1];
+      stroke('white')
+      line(
+        partA.position.x,
+        partA.position.y,
+        partB.position.x,
+        partB.position.y
+      );
+    }
+  } 
+}
 
 // setInterval(() => {
 
