@@ -31,14 +31,14 @@ async function setup() {
   stroke("white");
 
   // VIDEO
-  video = createVideo(
-    "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303"
-  );
+  const src = "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303"
+  video = createVideo(src);
   
   
-  let previousCache = localStorage.getItem(video.elt.currentSrc, JSON.stringify(posesByFrameCache))
+  let previousCache = localStorage.getItem(src)
   if (previousCache) {
     posesByFrameCache = JSON.parse(previousCache)
+    updateCacheProgress()
   }
   
 
@@ -49,7 +49,9 @@ async function setup() {
   video.hide();
 
   video.elt.onloadeddata = async () => {
-    const net = await posenet.load();
+    const net = await posenet.load({
+        // architecture: 'ResNet50',
+    });
     
     $cachingProgress.setAttribute('max', video.elt.duration * 29.97)
 
@@ -73,8 +75,7 @@ async function setup() {
             flipHorizontal: false
           }); 
           posesByFrameCache[currentFrame] = pose;
-          let framesCached = Object.keys(posesByFrameCache).length
-          $cachingProgress.value = framesCached
+          updateCacheProgress()
         }
       } catch (e) {
         return
@@ -132,10 +133,17 @@ async function setup() {
   frameRate(60);
 }
 
+
+function updateCacheProgress() {
+  let framesCached = Object.keys(posesByFrameCache).length
+  $cachingProgress.value = framesCached
+}
+
 setInterval(() => {
+  console.log("--SAVING CACHE--")
   localStorage.setItem(video.elt.currentSrc, JSON.stringify(posesByFrameCache))
   savedCache = true
-}, 10)
+}, 10000)
 
 function draw() {
   image(video, 0, 0, width, height);
