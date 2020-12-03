@@ -1,4 +1,4 @@
-/* body {
+body {
   display: grid;
   grid-template-columns: 2fr 1fr;
   height: 100vh;
@@ -6,10 +6,9 @@
   font-family: sans-serif;
 }
 
-video {
+canvas {
   margin: auto;
-  display: flex;
-  width: 100%;
+  width: 50%;
 }
 
 
@@ -44,4 +43,4 @@ main .inner {
   display: grid;
   grid-template-columns: 30px 30px auto 40px;
   margin-bottom: 5px;
-} */
+}

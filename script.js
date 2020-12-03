@@ -1,4 +1,4 @@
-let video;
+let video, poseNet;
 
 const $playbackSpeed = document.querySelector(".playback-speed");
 const $playbackSpeedLabel = document.querySelector(".playback-speed-label");
@@ -13,89 +13,89 @@ const $poseData = document.querySelector(".pose-data");
 let poses = [];
 
 function setup() {
-  let canvas = createCanvas(1920, 1080)
-  canvas.parent("main")
-  
+  let canvas = createCanvas(1920, 1080);
+  canvas.parent("main");
+
   video = createVideo(
-    "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303") => {
-      
-      // This sets up an event that fills the global variable "poses"
-      // with an array every time new poses are detected
-      poseNet.on("pose", results => {
-        poses = results;
-        // console.log(poses);
-        
-        for (const result of results) {
-          const {pose} = result
+    "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303"
+  );
 
-          for (const keypoint of pose.keypoints) {
-            const {part, position} = keypoint
-            const joint = document.querySelector(`.joint[data-part="${keypoint.part}"]`)
-            const x = position.x / video.width
-            const y = position.y / video.height
+  video.volume(0);
+  video.stop();
+  video.loop();
+  video.hide();
+  video.size(1920, 1080);
 
-            if (joint) {
-              joint.querySelector(`.x`).innerText = Math.round(x * 128)
-              joint.querySelector(`.progress-x`).value = Math.round(x * 128)
-              joint.querySelector(`.y`).innerText = Math.round(y * 128)
-              joint.querySelector(`.progress-y`).value = Math.round(y * 128)
-            }
+  video.elt.onloadeddata = () => {
+    poseNet = ml5.poseNet(video, () => {
+      console.log("model ready");
+    });
 
-            else {
-              $joints.innerHTML += `
-                <div class="joint" data-part="${keypoint.part}">
-                  <div class="name">${keypoint.part}</div>
+    // This sets up an event that fills the global variable "poses"
+    // with an array every time new poses are detected
+    poseNet.on("pose", results => {
+      poses = results;
+      // console.log(poses);
 
-                  <div class="grid">
-                    <span class="label">x:</span>
-                    <span class="x"></span>
-                    <progress class="progress-x" min="0" max="128" value="70"></progress>
-                    <button onclick="sendTest(${keypoint.part}, 1)">test</button>
-                  </div>
+      for (const result of results) {
+        const { pose } = result;
 
-                  <div class="grid">
-                    <span class="label">y:</span>
-                    <span class="y"></span>
-                    <progress class="progress-y" min="0" max="128" value="70"></progress>
-                    <button onclick="sendTest(${keypoint.part}, 2)">test</button>
-                  </div>
-               </div>
-              `
-            }
+        for (const keypoint of pose.keypoints) {
+          const { part, position } = keypoint;
+          const joint = document.querySelector(
+            `.joint[data-part="${keypoint.part}"]`
+          );
+          const x = position.x / video.width;
+          const y = position.y / video.height;
+
+          if (joint) {
+            joint.querySelector(`.x`).innerText = Math.round(x * 128);
+            joint.querySelector(`.progress-x`).value = Math.round(x * 128);
+            joint.querySelector(`.y`).innerText = Math.round(y * 128);
+            joint.querySelector(`.progress-y`).value = Math.round(y * 128);
+          } else {
+            $joints.innerHTML += `
+              <div class="joint" data-part="${keypoint.part}">
+                <div class="name">${keypoint.part}</div>
+
+                <div class="grid">
+                  <span class="label">x:</span>
+                  <span class="x"></span>
+                  <progress class="progress-x" min="0" max="128" value="70"></progress>
+                  <button onclick="sendTest(${keypoint.part}, 1)">test</button>
+                </div>
+
+                <div class="grid">
+                  <span class="label">y:</span>
+                  <span class="y"></span>
+                  <progress class="progress-y" min="0" max="128" value="70"></progress>
+                  <button onclick="sendTest(${keypoint.part}, 2)">test</button>
+                </div>
+             </div>
+            `;
+          }
         }
       }
-        
-        
-      });
+    });
+  };
 
-      video.volume(0);
-      video.stop();
-      video.loop();
-      video.hide();
-      video.size(1920, 1080)
-    }
-  );
-  
-
-  poseNet = ml5.poseNet(video, () => {
-    console.log("model ready");
-  });
-  
-  frameRate(60)
+  frameRate(60);
 }
+
+function onPose() {}
 
 let currentMidiOutput = null;
 
 function draw() {
   image(video, 0, 0, video.width, video.height);
-  console.log('draw...')
+  console.log("draw...");
   // We can call both functions to draw all keypoints and the skeletons
   drawKeypoints();
   drawSkeleton();
 }
 
 // A function to draw ellipses over the detected keypoints
-function drawKeypoints()  {
+function drawKeypoints() {
   // Loop through all the poses detected
   for (let i = 0; i < poses.length; i++) {
     // For each pose detected, loop through all the keypoints
@@ -105,7 +105,7 @@ function drawKeypoints()  {
       let keypoint = pose.keypoints[j];
       // Only draw an ellipse is the pose probability is bigger than 0.2
       if (keypoint.score > 0.2) {
-      	noStroke();
+        noStroke();
         fill(255, 0, 0);
         ellipse(keypoint.position.x, keypoint.position.y, 10, 10);
       }
@@ -123,61 +123,15 @@ function drawSkeleton() {
       let partA = skeleton[j][0];
       let partB = skeleton[j][1];
       stroke(255, 0, 0);
-      line(partA.position.x, partA.position.y, partB.position.x, partB.position.y);
+      line(
+        partA.position.x,
+        partA.position.y,
+        partB.position.x,
+        partB.position.y
+      );
     }
   }
 }
-
-
-// $video.addEventListener('loadeddata', () => {
-//   const poseNet = ml5.poseNet($video, {detectionType: 'single'}, () => {
-//     console.log("model loaded")
-//   });
-
-//   poseNet.on("pose", results => {
-//     console.log("poses", results)
-
-//       if (!$video.paused && results[0]) {
-//         for (const result of results) {
-//           const {pose} = result
-
-//           for (const keypoint of pose.keypoints) {
-//             const joint = document.querySelector(`.joint[data-part="${keypoint.part}"]`)
-//             const {x, y} = keypoint.position
-
-//             if (joint) {
-//               joint.querySelector(`.x`).innerText = Math.round(x * 128)
-//               joint.querySelector(`.progress-x`).value = Math.round(x * 128)
-//               joint.querySelector(`.y`).innerText = Math.round(y * 128)
-//               joint.querySelector(`.progress-y`).value = Math.round(y * 128)
-//             }
-
-//             else {
-//               $joints.innerHTML += `
-//                 <div class="joint" data-part="${keypoint.part}">
-//                   <div class="name">${keypoint.part}</div>
-
-//                   <div class="grid">
-//                     <span class="label">x:</span>
-//                     <span class="x"></span>
-//                     <progress class="progress-x" min="0" max="128" value="70"></progress>
-//                     <button onclick="sendTest(${keypoint.part}, 1)">test</button>
-//                   </div>
-
-//                   <div class="grid">
-//                     <span class="label">y:</span>
-//                     <span class="y"></span>
-//                     <progress class="progress-y" min="0" max="128" value="70"></progress>
-//                     <button onclick="sendTest(${keypoint.part}, 2)">test</button>
-//                   </div>
-//                </div>
-//               `
-//             }
-//           }
-//       }
-//     };
-//   })
-// })
 
 // setInterval(() => {
 
@@ -203,6 +157,7 @@ function drawSkeleton() {
 
 // }, 16)
 
+
 $playbackSpeed.oninput = () => {
   $video.playbackRate = $playbackSpeedLabel.innerText = $playbackSpeed.value;
 };
@@ -211,23 +166,6 @@ $midiOutputSelect.onchange = () => {
   currentMidiOutput = WebMidi.getOutputByName($midiOutputSelect.value);
   console.log("changed output to: ", currentMidiOutput.name);
 };
-
-// function findClosestPoses(currentTime) {
-//   let minDifference = Number.MAX_VALUE
-//   let closestPoses = null
-
-//   for (const {time, poses, scores} of poseValues) {
-//     const difference = Math.abs(time - currentTime)
-
-//     // It's closer!
-//     if (difference < minDifference) {
-//       minDifference = difference
-//       closestPoses = poses
-//     }
-//   }
-
-//   return closestPoses
-// }
 
 function sendTest(i, j) {
   currentMidiOutput.sendControlChange(i, 127, j);
@@ -244,27 +182,4 @@ WebMidi.enable(err => {
   }
 
   currentMidiOutput = WebMidi.outputs[0];
-
-  // Add the channels/joints
-  //   for (let i = 0; i < 17; i++) {
-  //     $joints.innerHTML += `
-  //       <div class="joint" data-i="${i}">
-  //         <div class="name">joint ${i + 1}</div>
-
-  //         <div class="grid">
-  //           <span class="label">x:</span>
-  //           <span class="x"></span>
-  //           <progress class="progress-x" min="0" max="128" value="70"></progress>
-  //           <button onclick="sendTest(${i}, 1)">test</button>
-  //         </div>
-
-  //         <div class="grid">
-  //           <span class="label">y:</span>
-  //           <span class="y"></span>
-  //           <progress class="progress-y" min="0" max="128" value="70"></progress>
-  //           <button onclick="sendTest(${i}, 2)">test</button>
-  //         </div>
-  //       </div>
-  //     `
-  //  }
 });
