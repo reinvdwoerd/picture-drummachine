@@ -1,4 +1,4 @@
-let video, poseNet;
+let video, poseNet, currentMidiOutput;
 
 const $playbackSpeed = document.querySelector(".playback-speed");
 const $playbackSpeedLabel = document.querySelector(".playback-speed-label");
@@ -44,14 +44,22 @@ function setup() {
       for (const result of results) {
         const { pose } = result;
 
-        for (const keypoint of pose.keypoints) {
+        for (let i = 0; i < pose.keypoints.length; i++) {
+          // A keypoint is an object describing a body part (like rightArm or leftShoulder)
+          const keypoint = pose.keypoints[i]
           const { part, position } = keypoint;
+          
           const joint = document.querySelector(
             `.joint[data-part="${keypoint.part}"]`
           );
-          const x = position.x / video.width;
-          const y = position.y / video.height;
-
+          const x = clamp(position.x / video.width, 0, 1);
+          const y = clamp(position.y / video.height, 0, 1);
+          
+          if (currentMidiOutput) {
+            currentMidiOutput.sendControlChange(i, x * 128, 1)
+            currentMidiOutput.sendControlChange(i, y * 128, 2)
+          }
+  
           if (joint) {
             joint.querySelector(`.x`).innerText = Math.round(x * 128);
             joint.querySelector(`.progress-x`).value = Math.round(x * 128);
@@ -66,18 +74,18 @@ function setup() {
                   <span class="label">x:</span>
                   <span class="x"></span>
                   <progress class="progress-x" min="0" max="128" value="70"></progress>
-                  <button onclick="sendTest(${keypoint.part}, 1)">test</button>
+                  <button onclick="sendTest(${i}, 1)">test</button>
                 </div>
 
                 <div class="grid">
                   <span class="label">y:</span>
                   <span class="y"></span>
                   <progress class="progress-y" min="0" max="128" value="70"></progress>
-                  <button onclick="sendTest(${keypoint.part}, 2)">test</button>
+                  <button onclick="sendTest(${i}, 2)">test</button>
                 </div>
              </div>
             `;
-          }
+          } 
         }
       }
     });
@@ -86,9 +94,8 @@ function setup() {
   frameRate(60);
 }
 
-function onPose() {}
 
-let currentMidiOutput = null;
+
 
 function draw() {
   image(video, 0, 0, video.width, video.height);
@@ -188,3 +195,8 @@ WebMidi.enable(err => {
 
   currentMidiOutput = WebMidi.outputs[0];
 });
+
+
+function clamp(num, min, max) {
+  return num <= min ? min : num >= max ? max : num;
+}

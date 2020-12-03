@@ -53,6 +53,7 @@ main .inner {
   display: grid;
   grid-template-columns: 30px 30px auto 40px;
   margin-bottom: 5px;
+  grid-gap: 0 5px;
 }
 
 progress {
