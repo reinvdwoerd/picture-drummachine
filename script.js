@@ -15,7 +15,7 @@ let currentMidiOutput = null
 console.log($video)
 
 $video.addEventListener('loadeddata', () => {
-  const poseNet = ml5.poseNet($video, () => {
+  const poseNet = ml5.poseNet($video, {detectionType: 'single'}, () => {
     console.log("model loaded")
   });
   
