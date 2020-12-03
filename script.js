@@ -23,42 +23,43 @@ $video.addEventListener('loadeddata', () => {
     console.log("poses", results)
     
       if (!$video.paused && results[0]) {
-        const firstPose = results[0].pose
-        for (const keypoint of firstPose.keypoints) {
-          const joint = document.querySelector(`.joint[data-part="${keypoint.part}"]`)
-          const {x, y} = keypoint.position
-          
-          if (joint) {
-            joint.querySelector(`.x`).innerText = Math.round(x * 128)
-            joint.querySelector(`.progress-x`).value = Math.round(x * 128)
-            joint.querySelector(`.y`).innerText = Math.round(y * 128)
-            joint.querySelector(`.progress-y`).value = Math.round(y * 128)
-          }
-          
-          else {
-            $joints.innerHTML += `
-              <div class="joint" data-part="${keypoint.part}">
-                <div class="name">${keypoint.part}</div>
+        for (const result of results) {
+          const {pose} = result
+            for (const keypoint of firstPose.keypoints) {
+            const joint = document.querySelector(`.joint[data-part="${keypoint.part}"]`)
+            const {x, y} = keypoint.position
 
-                <div class="grid">
-                  <span class="label">x:</span>
-                  <span class="x"></span>
-                  <progress class="progress-x" min="0" max="128" value="70"></progress>
-                  <button onclick="sendTest(${keypoint.part}, 1)">test</button>
-                </div>
+            if (joint) {
+              joint.querySelector(`.x`).innerText = Math.round(x * 128)
+              joint.querySelector(`.progress-x`).value = Math.round(x * 128)
+              joint.querySelector(`.y`).innerText = Math.round(y * 128)
+              joint.querySelector(`.progress-y`).value = Math.round(y * 128)
+            }
 
-                <div class="grid">
-                  <span class="label">y:</span>
-                  <span class="y"></span>
-                  <progress class="progress-y" min="0" max="128" value="70"></progress>
-                  <button onclick="sendTest(${keypoint.part}, 2)">test</button>
-                </div>
-             </div>
-            `
+            else {
+              $joints.innerHTML += `
+                <div class="joint" data-part="${keypoint.part}">
+                  <div class="name">${keypoint.part}</div>
+
+                  <div class="grid">
+                    <span class="label">x:</span>
+                    <span class="x"></span>
+                    <progress class="progress-x" min="0" max="128" value="70"></progress>
+                    <button onclick="sendTest(${keypoint.part}, 1)">test</button>
+                  </div>
+
+                  <div class="grid">
+                    <span class="label">y:</span>
+                    <span class="y"></span>
+                    <progress class="progress-y" min="0" max="128" value="70"></progress>
+                    <button onclick="sendTest(${keypoint.part}, 2)">test</button>
+                  </div>
+               </div>
+              `
+            }
           }
-        }
       }
-  });
+  };
 })
 
 
