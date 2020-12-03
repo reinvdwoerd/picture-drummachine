@@ -13,12 +13,15 @@ const $poseData = document.querySelector(".pose-data");
 let poses;
 
 function setup() {
+  createCanvas(1920, 1080)
+  pixelDensity(1)
+
   video = createVideo(
     "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303",
     () => {
       // This sets up an event that fills the global variable "poses"
       // with an array every time new poses are detected
-      poseNet.on("pose", function(results) {
+      poseNet.on("pose", results => {
         poses = results;
         console.log(poses);
         
@@ -26,8 +29,10 @@ function setup() {
           const {pose} = result
 
           for (const keypoint of pose.keypoints) {
+            const {part, position} = keypoint
             const joint = document.querySelector(`.joint[data-part="${keypoint.part}"]`)
-            const {x, y} = keypoint.position
+            const x = position.x / video.width
+            const y = position.y / video.height
 
             if (joint) {
               joint.querySelector(`.x`).innerText = Math.round(x * 128)
@@ -64,10 +69,12 @@ function setup() {
       });
 
       video.volume(0);
-      video.hide();
+      video.stop();
       video.loop();
+      video.size(1920, 1080)
     }
   );
+  
 
   poseNet = ml5.poseNet(video, () => {
     console.log("model ready");
@@ -75,6 +82,49 @@ function setup() {
 }
 
 let currentMidiOutput = null;
+
+function draw() {
+  // image(video, 0, 0, video.width, video.height);
+
+  // We can call both functions to draw all keypoints and the skeletons
+  drawKeypoints();
+  drawSkeleton();
+}
+
+// A function to draw ellipses over the detected keypoints
+function drawKeypoints()  {
+  // Loop through all the poses detected
+  for (let i = 0; i < poses.length; i++) {
+    // For each pose detected, loop through all the keypoints
+    let pose = poses[i].pose;
+    for (let j = 0; j < pose.keypoints.length; j++) {
+      // A keypoint is an object describing a body part (like rightArm or leftShoulder)
+      let keypoint = pose.keypoints[j];
+      // Only draw an ellipse is the pose probability is bigger than 0.2
+      if (keypoint.score > 0.2) {
+      	noStroke();
+        fill(255, 0, 0);
+        ellipse(keypoint.position.x, keypoint.position.y, 10, 10);
+      }
+    }
+  }
+}
+
+// A function to draw the skeletons
+function drawSkeleton() {
+  // Loop through all the skeletons detected
+  for (let i = 0; i < poses.length; i++) {
+    let skeleton = poses[i].skeleton;
+    // For every skeleton, loop through all body connections
+    for (let j = 0; j < skeleton.length; j++) {
+      let partA = skeleton[j][0];
+      let partB = skeleton[j][1];
+      stroke(255, 0, 0);
+      line(partA.position.x, partA.position.y, partB.position.x, partB.position.y);
+    }
+  }
+}
+
 
 // $video.addEventListener('loadeddata', () => {
 //   const poseNet = ml5.poseNet($video, {detectionType: 'single'}, () => {
