@@ -13,39 +13,50 @@ const $poseData = document.querySelector('.pose-data')
 let currentMidiOutput = null
 
 
+const poseNet = ml5.poseNet($video, () => {
+  
+});
+
+
+poseNet.on("pose", function(results) {
+  console.log("poses")
+});
+
+
 setInterval(() => {
   // Display time
   $currentTime.innerText = $video.currentTime
   $currentFrame.innerText = Math.floor($video.currentTime * 29.97)
   
   // Get pose data
-  const posesForCurrentTime = findClosestPoses($video.currentTime)
-  $poseData.innerText = JSON.stringify(posesForCurrentTime[0])
+  // const posesForCurrentTime = findClosestPoses($video.currentTime)
+  // $poseData.innerText = JSON.stringify(posesForCurrentTime[0])
   
   // Send the midi
   if (!$video.paused) {
+    
     // Display time
-    $currentTime.innerText = $video.currentTime
-    $currentFrame.innerText = Math.floor($video.currentTime * 29.97)
+//     $currentTime.innerText = $video.currentTime
+//     $currentFrame.innerText = Math.floor($video.currentTime * 29.97)
 
-    // Get pose data
-    const posesForCurrentTime = findClosestPoses($video.currentTime)
-    $poseData.innerText = JSON.stringify(posesForCurrentTime[0])
+//     // Get pose data
+//     const posesForCurrentTime = findClosestPoses($video.currentTime)
+//     $poseData.innerText = JSON.stringify(posesForCurrentTime[0])
     
-    console.log(posesForCurrentTime[0].length)
+//     console.log(posesForCurrentTime[0].length)
     
     
-    for (let i = 0; i < posesForCurrentTime[0].length; i++) {
-      const [x, y] = posesForCurrentTime[0][i];
-      currentMidiOutput.sendControlChange(i, x * 128, 1)
-      currentMidiOutput.sendControlChange(i, y * 128, 2)
+//     for (let i = 0; i < posesForCurrentTime[0].length; i++) {
+//       const [x, y] = posesForCurrentTime[0][i];
+//       currentMidiOutput.sendControlChange(i, x * 128, 1)
+//       currentMidiOutput.sendControlChange(i, y * 128, 2)
 
-      document.querySelector(`.joint[data-i="${i}"] .x`).innerText = Math.round(x * 128)
-      document.querySelector(`.joint[data-i="${i}"] .progress-x`).value = Math.round(x * 128)
+//       document.querySelector(`.joint[data-i="${i}"] .x`).innerText = Math.round(x * 128)
+//       document.querySelector(`.joint[data-i="${i}"] .progress-x`).value = Math.round(x * 128)
 
-      document.querySelector(`.joint[data-i="${i}"] .y`).innerText = Math.round(y * 128)
-      document.querySelector(`.joint[data-i="${i}"] .progress-y`).value = Math.round(y * 128)
-    }
+//       document.querySelector(`.joint[data-i="${i}"] .y`).innerText = Math.round(y * 128)
+//       document.querySelector(`.joint[data-i="${i}"] .progress-y`).value = Math.round(y * 128)
+//     }
   }
  
 }, 16)
@@ -63,22 +74,22 @@ $midiOutputSelect.onchange = () => {
 }
   
 
-function findClosestPoses(currentTime) {
-  let minDifference = Number.MAX_VALUE
-  let closestPoses = null
+// function findClosestPoses(currentTime) {
+//   let minDifference = Number.MAX_VALUE
+//   let closestPoses = null
   
-  for (const {time, poses, scores} of poseValues) {
-    const difference = Math.abs(time - currentTime)
+//   for (const {time, poses, scores} of poseValues) {
+//     const difference = Math.abs(time - currentTime)
     
-    // It's closer!
-    if (difference < minDifference) {
-      minDifference = difference
-      closestPoses = poses
-    }
-  }
+//     // It's closer!
+//     if (difference < minDifference) {
+//       minDifference = difference
+//       closestPoses = poses
+//     }
+//   }
   
-  return closestPoses
-}
+//   return closestPoses
+// }
 
 
 
