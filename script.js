@@ -12,21 +12,27 @@ const $poseData = document.querySelector('.pose-data')
 
 let currentMidiOutput = null
 
+console.log($video)
 
-const poseNet = ml5.poseNet($video, () => {
+$video.addEventListener('loadeddata', () => {
+  const poseNet = ml5.poseNet($video, {detectionType: 'single'}, () => {
+    console.log("model loaded")
+  });
   
-});
+  poseNet.on("pose", results => {
+    console.log("poses", results)
+    
+      if (!$video.paused) {
+        
+      }
+  });
+})
 
 
-poseNet.on("pose", function(results) {
-  console.log("poses")
-});
+
 
 
 setInterval(() => {
-  // Display time
-  $currentTime.innerText = $video.currentTime
-  $currentFrame.innerText = Math.floor($video.currentTime * 29.97)
   
   // Get pose data
   // const posesForCurrentTime = findClosestPoses($video.currentTime)
@@ -34,11 +40,6 @@ setInterval(() => {
   
   // Send the midi
   if (!$video.paused) {
-    
-    // Display time
-//     $currentTime.innerText = $video.currentTime
-//     $currentFrame.innerText = Math.floor($video.currentTime * 29.97)
-
 //     // Get pose data
 //     const posesForCurrentTime = findClosestPoses($video.currentTime)
 //     $poseData.innerText = JSON.stringify(posesForCurrentTime[0])
