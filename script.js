@@ -11,6 +11,7 @@ const $currentFrame = document.querySelector(".current-frame");
 const $poseData = document.querySelector(".pose-data");
 
 let poses = [];
+let posesByFrameCache = {}
 
 function setup() {
   let canvas = createCanvas(1920, 1080);
@@ -28,7 +29,7 @@ function setup() {
   video.volume(0);
   video.stop();
   video.loop();
-  video.hide();
+  video.showControls();
 
   video.elt.onloadeddata = () => {
     poseNet = ml5.poseNet(video, () => {
@@ -41,6 +42,9 @@ function setup() {
       poses = results;
       // console.log(poses);
 
+      // Video position
+      
+      
       for (const result of results) {
         const { pose } = result;
 
@@ -55,16 +59,18 @@ function setup() {
           const x = clamp(position.x / video.width, 0, 1);
           const y = clamp(position.y / video.height, 0, 1);
           
+          console.log(x, y)
+          
           if (currentMidiOutput) {
-            currentMidiOutput.sendControlChange(i, x * 128, 1)
-            currentMidiOutput.sendControlChange(i, y * 128, 2)
+            currentMidiOutput.sendControlChange(i, x * 127, 1)
+            currentMidiOutput.sendControlChange(i, y * 127, 2)
           }
   
           if (joint) {
-            joint.querySelector(`.x`).innerText = Math.round(x * 128);
-            joint.querySelector(`.progress-x`).value = Math.round(x * 128);
-            joint.querySelector(`.y`).innerText = Math.round(y * 128);
-            joint.querySelector(`.progress-y`).value = Math.round(y * 128);
+            joint.querySelector(`.x`).innerText = x.toPrecision(2);
+            joint.querySelector(`.progress-x`).value = x.toPrecision(2);
+            joint.querySelector(`.y`).innerText = y.toPrecision(2);
+            joint.querySelector(`.progress-y`).value = y.toPrecision(2);
           } else {
             $joints.innerHTML += `
               <div class="joint" data-part="${keypoint.part}">
@@ -73,14 +79,14 @@ function setup() {
                 <div class="grid">
                   <span class="label">x:</span>
                   <span class="x"></span>
-                  <progress class="progress-x" min="0" max="128" value="70"></progress>
+                  <progress class="progress-x" min="0" max="1" value="0"></progress>
                   <button onclick="sendTest(${i}, 1)">test</button>
                 </div>
 
                 <div class="grid">
                   <span class="label">y:</span>
                   <span class="y"></span>
-                  <progress class="progress-y" min="0" max="128" value="70"></progress>
+                  <progress class="progress-y" min="0" max="1" value="0"></progress>
                   <button onclick="sendTest(${i}, 2)">test</button>
                 </div>
              </div>
