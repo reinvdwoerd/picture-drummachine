@@ -34,6 +34,11 @@ main .inner {
   order: 2;
 }
 
+.caching {
+  display: none;
+}
+
+
 .midi {
   border-left: 1px solid grey;
   padding: 25px;

@@ -13,13 +13,10 @@ const $currentFrame = document.querySelector(".current-frame");
 const $poseData = document.querySelector(".pose-data");
 
 let pose = null;
-let posesByFrameCache = {};
+// let posesByFrameCache = {};
+
 
 let savedCache = false
-
-
-
-let saved
 
 
 async function setup() {
@@ -30,8 +27,7 @@ async function setup() {
    if (video.elt.paused) {
       video.loop()
     } else {
-        video.pause()
-
+      video.pause()
     }
   })
   
@@ -40,15 +36,15 @@ async function setup() {
   stroke("white");
 
   // VIDEO
-  const src = "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303"
+  const src = localStorage.getItem('videoSrc') || "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303"
   video = createVideo(src);
   
   
-  let previousCache = localStorage.getItem(src)
-  if (previousCache) {
-    posesByFrameCache = JSON.parse(previousCache)
-    updateCacheProgress()
-  }
+//   let previousCache = localStorage.getItem(src)
+//   if (previousCache) {
+//     posesByFrameCache = JSON.parse(previousCache)
+//     updateCacheProgress()
+//   }
   
 
   video.volume(0);
@@ -72,20 +68,20 @@ async function setup() {
         $currentTime.innerText = currentTime;
         $currentFrame.innerText = currentFrame;
 
-        // Cache hit!
-        if (posesByFrameCache[currentFrame]) {
-          // console.log("Cache hit! Current frame is: ", currentFrame)
-          pose = posesByFrameCache[currentFrame]
+//         // Cache hit!
+//         if (posesByFrameCache[currentFrame]) {
+//           // console.log("Cache hit! Current frame is: ", currentFrame)
+//           pose = posesByFrameCache[currentFrame]
           
-        // Cache miss!
-        } else {
+//         // Cache miss!
+//         } else {
           // console.log("Cache miss: ", currentFrame)
           pose = await net.estimateSinglePose(video.elt, {
             flipHorizontal: false
           }); 
-          posesByFrameCache[currentFrame] = pose;
-          updateCacheProgress()
-        }
+          // posesByFrameCache[currentFrame] = pose;
+          // updateCacheProgress()
+        // }
       } catch (e) {
         return
       }
@@ -136,25 +132,31 @@ async function setup() {
             `;
         }
       }
-    }, 16);
+      // console.log(frameRate())
+    }, 33);
   };
 
-  frameRate(60);
+  frameRate(30);
 }
 
 
-function updateCacheProgress() {
-  let framesCached = Object.keys(posesByFrameCache).length
-  $cachingProgress.value = framesCached
-}
+// function updateCacheProgress() {
+//   let framesCached = Object.keys(posesByFrameCache).length
+//   $cachingProgress.value = framesCached
+// }
 
-setInterval(() => {
-  console.log("--SAVING CACHE--")
-  localStorage.setItem(video.elt.currentSrc, JSON.stringify(posesByFrameCache))
-  savedCache = true
-}, 10000)
+// setInterval(() => {
+//   console.log("--SAVING CACHE--")
+//   localStorage.setItem(video.elt.currentSrc, JSON.stringify(posesByFrameCache))
+//   savedCache = true
+// }, 10000)
 
-function draw() {
+async function draw() {
+  
+  
+  
+  
+  // THE DRAWING --------
   image(video, 0, 0, width, height);
   // console.log("draw...");
   // We can call both functions to draw all keypoints and the skeletons
@@ -199,29 +201,6 @@ function drawSkeleton() {
   } 
 }
 
-// setInterval(() => {
-
-// Get pose data
-// const posesForCurrentTime = findClosestPoses($video.currentTime)
-// $poseData.innerText = JSON.stringify(posesForCurrentTime[0])
-
-// Send the midi
-// if (!$video.paused) {
-//     // Get pose data
-//     const posesForCurrentTime = findClosestPoses($video.currentTime)
-//     $poseData.innerText = JSON.stringify(posesForCurrentTime[0])
-
-//     console.log(posesForCurrentTime[0].length)
-
-//     for (let i = 0; i < posesForCurrentTime[0].length; i++) {
-//       const [x, y] = posesForCurrentTime[0][i];
-//       currentMidiOutput.sendControlChange(i, x * 128, 1)
-//       currentMidiOutput.sendControlChange(i, y * 128, 2)
-
-//     }
-// }
-
-// }, 16)
 
 $playbackSpeed.oninput = () => {
   video.speed($playbackSpeed.value);
@@ -236,6 +215,7 @@ $midiOutputSelect.onchange = () => {
   currentMidiOutput = WebMidi.getOutputByName($midiOutputSelect.value);
   console.log("changed output to: ", currentMidiOutput.name);
 };
+
 
 function sendTest(i, j) {
   currentMidiOutput.sendControlChange(i, 127, j);
@@ -267,7 +247,12 @@ function dropHandler(ev) {
   // Prevent default behavior (Prevent file from being opened)
   ev.preventDefault();
 
-      console.log(ev.dataTransfer.files)
+  console.log(ev.dataTransfer.files)
+
+  video.elt.src = URL.createObjectURL(ev.dataTransfer.files[0])
+  
+  localStorage.setItem('videoSrc', video.elt.src)
+
 
   if (ev.dataTransfer.items) {
     // Use DataTransferItemList interface to access the file(s)
