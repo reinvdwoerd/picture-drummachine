@@ -48,6 +48,7 @@ async function setup() {
 
 
   video.elt.onloadeddata = async () => {
+    video.loop();
     net = await posenet.load({
       // architecture: 'ResNet50',
     });
@@ -233,7 +234,7 @@ function dropHandler(ev) {
   video.elt.src = URL.createObjectURL(ev.dataTransfer.files[0]);
   $positionSlider.setAttribute('max', video.elt.duration)
   localStorage.setItem("videoSrc", video.elt.src);
-
+  
   
   if (ev.dataTransfer.items) {
     // Use DataTransferItemList interface to access the file(s)
