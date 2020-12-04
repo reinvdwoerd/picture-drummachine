@@ -1,3 +1,4 @@
+// Globals
 let video, net, currentMidiOutput;
 
 const $playbackSpeed = document.querySelector(".playback-speed");
@@ -42,13 +43,14 @@ async function setup() {
   video.loop();
   video.showControls();
   video.hide();
+  
+  $positionSlider.setAttribute('max', video.elt.duration)
+
 
   video.elt.onloadeddata = async () => {
     net = await posenet.load({
       // architecture: 'ResNet50',
     });
-
-    $cachingProgress.setAttribute("max", video.elt.duration * 29.97);
   };
 
   frameRate(30);
@@ -56,16 +58,12 @@ async function setup() {
 
 
 async function draw() {
-  // THE DRAWING --------
-  image(video, 0, 0, width, height);
-
-  
-  
   // THE UPDATING ---
   const currentTime = video.elt.currentTime;
   const currentFrame = Math.floor(currentTime * 29.97);
   $currentTime.innerText = currentTime;
   $currentFrame.innerText = currentFrame;
+  $positionSlider.value = currentTime
 
   try {
     // Video position
@@ -134,36 +132,46 @@ async function draw() {
           `;
     }
   }
-
-
+  
   // console.log(frameRate())
-
-
-  // We can call both functions to draw all keypoints and the skeletons
-  drawSkeleton();
+  
+  
+  // THE DRAWING --------
+  image(video, 0, 0, width, height);
+  // We can call both functions to draw all keypoints and the skeleton
+  if (pose) {
+    drawSkeleton();
+    drawKeypoints();
+  }
 }
 
 
 
 // A function to draw the skeletons
 function drawSkeleton() {
-  if (pose) {
-    // Loop through all the skeletons detected
-    let skeleton = posenet.getAdjacentKeyPoints(pose.keypoints);
-    // For every skeleton, loop through all body connections
-    for (let j = 0; j < skeleton.length; j++) {
-      let partA = skeleton[j][0];
-      let partB = skeleton[j][1];
-      stroke("white");
-      line(
-        partA.position.x,
-        partA.position.y,
-        partB.position.x,
-        partB.position.y
-      );
-    }
+  // Loop through all the skeletons detected
+  let skeleton = posenet.getAdjacentKeyPoints(pose.keypoints);
+  // For every skeleton, loop through all body connections
+  for (const [partA, partB] of skeleton) {
+    stroke("white");
+    line(
+      partA.position.x,
+      partA.position.y,
+      partB.position.x,
+      partB.position.y
+    );
+  }  
+}
+
+// A function to draw ellipses over the detected keypoints
+function drawKeypoints() {
+  for (const keypoint of pose.keypoints) {
+    stroke("black");
+    fill("white");
+    ellipse(keypoint.position.x, keypoint.position.y, 20, 20);
   }
 }
+
 
 
 
@@ -221,10 +229,12 @@ function dropHandler(ev) {
 
   console.log(ev.dataTransfer.files);
 
+  // Load the new video and save the URL
   video.elt.src = URL.createObjectURL(ev.dataTransfer.files[0]);
-
+  $positionSlider.setAttribute('max', video.elt.duration)
   localStorage.setItem("videoSrc", video.elt.src);
 
+  
   if (ev.dataTransfer.items) {
     // Use DataTransferItemList interface to access the file(s)
     for (var i = 0; i < ev.dataTransfer.items.length; i++) {
