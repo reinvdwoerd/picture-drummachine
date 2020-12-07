@@ -13,7 +13,7 @@ const $currentTime = document.querySelector(".current-time");
 const $currentFrame = document.querySelector(".current-frame");
 const $poseData = document.querySelector(".pose-data");
 
-let pose = null;
+let poses = [];
 
 
 async function setup() {
@@ -33,9 +33,7 @@ async function setup() {
   stroke("white");
 
   // VIDEO
-  const src =
-    localStorage.getItem("videoSrc") ||
-    "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303";
+  const src = "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303";
   video = createVideo(src);
 
   video.volume(0);
@@ -46,12 +44,12 @@ async function setup() {
   
   $positionSlider.setAttribute('max', video.elt.duration)
 
+  net = await posenet.load({
+      // architecture: 'ResNet50',
+  });
 
   video.elt.onloadeddata = async () => {
     video.loop();
-    net = await posenet.load({
-      // architecture: 'ResNet50',
-    });
   };
 
   frameRate(30);
@@ -68,71 +66,81 @@ async function draw() {
 
   try {
     // Video position
-    pose = await net.estimateSinglePose(video.elt, {
-      flipHorizontal: false
+    poses = await net.estimateMultiplePoses(video.elt, {
+      flipHorizontal: false,
+      maxDetections: 5,
+      scoreThreshold: 0.5,
+      nmsRadius: 20
     });
   } catch (e) {
+    console.log(e)
     return;
   }
 
   // KEYPOINTS =======================================
   // =================================================
-  for (let i = 0; i < pose.keypoints.length; i++) {
-    // A keypoint is an object describing a body part (like rightArm or leftShoulder)
-    const keypoint = pose.keypoints[i];
-    const { part, position } = keypoint;
+  for (let poseI = 0; poseI < poses.length; poseI++) {
+      const pose = poses[poseI];
+      for (let i = 0; i < pose.keypoints.length; i++) {
+        // A keypoint is an object describing a body part (like rightArm or leftShoulder)
+        const keypoint = pose.keypoints[i];
+        const { part, position } = keypoint;
+        
+        const midiI = poseI * 16 + i
 
-    // Normalize values ----
-    const x = clamp(position.x / video.width, 0, 1);
-    const y = clamp(position.y / video.height, 0, 1);
+        // Normalize values ----
+        const x = clamp(position.x / video.width, 0, 1);
+        const y = clamp(position.y / video.height, 0, 1);
 
-    // MIDI OUT ------
-    if (currentMidiOutput && !video.elt.paused) {
-      currentMidiOutput.sendControlChange(i, x * 127, 1);
-      currentMidiOutput.sendControlChange(i, y * 127, 2);
-    }
+        // MIDI OUT ------
+        if (currentMidiOutput && !video.elt.paused) {
+          currentMidiOutput.sendControlChange(i, x * 127, 1);
+          currentMidiOutput.sendControlChange(i, y * 127, 2);
+        }
 
-    
-    // DRAWING ----
-    // Draw ellipses over the detected keypoints
-    // Only draw an ellipse is the pose probability is bigger than 0.2
-    if (keypoint.score > 0.2) {
-      stroke("black");
-      fill("white");
-      ellipse(keypoint.position.x, keypoint.position.y, 20, 20);
-    }
-    
 
-    // UI UPDATING -----
-    const $joint = document.querySelector(`.joint[data-part="${keypoint.part}"]`);
+        // DRAWING ----
+        // Draw ellipses over the detected keypoints
+        // Only draw an ellipse is the pose probability is bigger than 0.2
+        if (keypoint.score > 0.2) {
+          stroke("black");
+          fill("white");
+          ellipse(keypoint.position.x, keypoint.position.y, 20, 20);
+        }
 
-    if ($joint) {
-      $joint.querySelector(`.x`).innerText = x.toPrecision(2);
-      $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
-      $joint.querySelector(`.y`).innerText = y.toPrecision(2);
-      $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
-    } else {
-      $joints.innerHTML += `
-            <div class="joint" data-part="${keypoint.part}">
-              <div class="name">${i}: ${keypoint.part}</div>
 
-              <div class="grid">
-                <span class="label">x:</span>
-                <span class="x"></span>
-                <progress class="progress-x" min="0" max="1" value="0"></progress>
-                <button onclick="sendTest(${i}, 1)">test</button>
-              </div>
+        // UI UPDATING -----
+        const $joint = document.querySelector(`.joint[data-part="${keypoint.part}"][data-pose="${poseI}"]`);
 
-              <div class="grid">
-                <span class="label">y:</span>
-                <span class="y"></span>
-                <progress class="progress-y" min="0" max="1" value="0"></progress>
-                <button onclick="sendTest(${i}, 2)">test</button>
-              </div>
-           </div>
-          `;
-    }
+        if ($joint) {
+          $joint.querySelector(`.x`).innerText = x.toPrecision(2);
+          $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
+          $joint.querySelector(`.y`).innerText = y.toPrecision(2);
+          $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
+        } else {
+          $joints.innerHTML += `
+                <div class="joint" data-part="${keypoint.part}" data-pose="${poseI}">
+                  <div class="name">${midiI}: person ${poseI} - ${keypoint.part}</div>
+
+                  <div class="grid">
+                    <span class="label">x:</span>
+                    <span class="x"></span>
+                    <progress class="progress-x" min="0" max="1" value="0"></progress>
+                    <button onclick="sendTest(${midiI}, 1)">test</button>
+                  </div>
+
+                  <div class="grid">
+                    <span class="label">y:</span>
+                    <span class="y"></span>
+                    <progress class="progress-y" min="0" max="1" value="0"></progress>
+                    <button onclick="sendTest(${midiI}, 2)">test</button>
+                  </div>
+               </div>
+              `;
+        }
+     }
   }
+
   
   // console.log(frameRate())
   
@@ -140,36 +148,38 @@ async function draw() {
   // THE DRAWING --------
   image(video, 0, 0, width, height);
   // We can call both functions to draw all keypoints and the skeleton
-  if (pose) {
-    drawSkeleton();
-    drawKeypoints();
-  }
+  drawSkeleton();
+  drawKeypoints();
 }
 
 
 
 // A function to draw the skeletons
 function drawSkeleton() {
-  // Loop through all the skeletons detected
-  let skeleton = posenet.getAdjacentKeyPoints(pose.keypoints);
-  // For every skeleton, loop through all body connections
-  for (const [partA, partB] of skeleton) {
-    stroke("white");
-    line(
-      partA.position.x,
-      partA.position.y,
-      partB.position.x,
-      partB.position.y
-    );
-  }  
+  for (const pose of poses) {
+    // Loop through all the skeletons detected
+    let skeleton = posenet.getAdjacentKeyPoints(pose.keypoints);
+    // For every skeleton, loop through all body connections
+    for (const [partA, partB] of skeleton) {
+      stroke("white");
+      line(
+        partA.position.x,
+        partA.position.y,
+        partB.position.x,
+        partB.position.y
+      );
+    }  
+  }
 }
 
 // A function to draw ellipses over the detected keypoints
 function drawKeypoints() {
-  for (const keypoint of pose.keypoints) {
-    stroke("black");
-    fill("white");
-    ellipse(keypoint.position.x, keypoint.position.y, 20, 20);
+  for (const pose of poses) {
+    for (const keypoint of pose.keypoints) {
+      stroke("black");
+      fill("white");
+      ellipse(keypoint.position.x, keypoint.position.y, 20, 20);
+    }
   }
 }
 
