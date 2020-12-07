@@ -94,8 +94,8 @@ async function draw() {
 
         // MIDI OUT ------
         if (currentMidiOutput && !video.elt.paused) {
-          currentMidiOutput.sendControlChange(i, x * 127, 1);
-          currentMidiOutput.sendControlChange(i, y * 127, 2);
+          currentMidiOutput.sendControlChange(midiI, x * 127, 1);
+          currentMidiOutput.sendControlChange(midiI, y * 127, 2);
         }
 
 
