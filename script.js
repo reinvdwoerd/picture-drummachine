@@ -167,34 +167,43 @@ async function draw() {
     }
     
     if (item.type == 'absolute') {
-      let $el = $(`.tracked-item:nth-child(${i})`);
-      const keypoint = poses[item.person].find(pose => pose.)
-          
-      if ($el) {
-        const x = clamp(keypoint.position.x / video.width, -1, 1);
-        const y = clamp(keypoint.position.y / video.height, -1, 1);
+      let $el = $(`.tracked-item[data-part="${item.part}"]`);
+      
+      if (poses[item.person]) {
+          const keypoint = poses[item.person].keypoints.find(kp => kp.part == item.part)
 
-        if (currentMidiOutput && !video.elt.paused) {
-          currentMidiOutput.sendControlChange(i, map(x, 0, 1, 0, 127), 1);
-          currentMidiOutput.sendControlChange(i, map(y, 0, 1, 0, 127), 2);
+          if ($el) {
+            const x = clamp(keypoint.position.x / video.width, -1, 1);
+            const y = clamp(keypoint.position.y / video.height, -1, 1);
+
+            if (currentMidiOutput && !video.elt.paused) {
+              currentMidiOutput.sendControlChange(i, map(x, 0, 1, 0, 127), 1);
+              currentMidiOutput.sendControlChange(i, map(y, 0, 1, 0, 127), 2);
+            }
+
+            $el.querySelector(`.x`).innerText = x.toPrecision(2);
+            $el.querySelector(`.y`).innerText = y.toPrecision(2);
+
+          } else {
+              $joints.innerHTML += `
+                  <div class="tracked-item absolute" data-part="${item.part}">
+                    <div>
+                      <span class="index">${i}</span>
+                      <span class="name">PERSON ${item.person} <span class="sep">-</span> ${item.part}</span>
+                    </div>
+
+                    <div>
+                      <span class="sep">x: </span>
+                      <span class="x"></span> <br>
+                      <span class="sep">y: </span>
+                      <span class="y"></span>
+                    </div>
+                 </div>
+              `;
+          }
         }
-
-        $el.querySelector(`.rel-x`).innerText = x.toPrecision(2);
-        $el.querySelector(`.rel-y`).innerText = y.toPrecision(2);
-
-      } else {
-          $joints.innerHTML += `
-              <div class="tracked-item absolute" data-part="${item.part}">
-                <div>
-                  <span class="index">${i}</span>
-                  <span class="name"></span>
-                </div>
-
-
-             </div>
-          `;
       }
-    }
+      
     
   }
 
@@ -202,34 +211,34 @@ async function draw() {
   
   
   
-  for (let poseI = 0; poseI < poses.length; poseI++) {
-    const pose = poses[poseI];
+//   for (let poseI = 0; poseI < poses.length; poseI++) {
+//     const pose = poses[poseI];
 
-    const $pose = $(`.pose[data-pose="${poseI}"]`);
+//     const $pose = $(`.pose[data-pose="${poseI}"]`);
     
-    if ($pose) {
-        let skeleton = posenet.getAdjacentKeyPoints(pose.keypoints);
-        skeleton.forEach(([partA, partB], i) => {
-          const midiI = poseI * 12 + i;
+//     if ($pose) {
+//         let skeleton = posenet.getAdjacentKeyPoints(pose.keypoints);
+//         skeleton.forEach(([partA, partB], i) => {
+//           const midiI = poseI * 12 + i;
 
           
-        });
-    } else {
-      $joints.innerHTML += `
-          <div class="pose" data-pose="${poseI}" style="order: 17">
-            <div class="name">
-              <span>PERSON ${poseI}</span>
+//         });
+//     } else {
+//       $joints.innerHTML += `
+//           <div class="pose" data-pose="${poseI}" style="order: 17">
+//             <div class="name">
+//               <span>PERSON ${poseI}</span>
               
-              <span class="rel-x">rel. x</span>
-              <span class="rel-y">rel. y</span>
-              <span class="abs-x">abs. x</span>
-              <span class="abs-y">abs. y</span>
-            </div>
+//               <span class="rel-x">rel. x</span>
+//               <span class="rel-y">rel. y</span>
+//               <span class="abs-x">abs. x</span>
+//               <span class="abs-y">abs. y</span>
+//             </div>
                          
             
-          </div>
-      `;
-    }
+//           </div>
+//       `;
+//     }
     
      // Normalize values ----
 //         const x = clamp(position.x / video.width, 0, 1);
@@ -240,34 +249,7 @@ async function draw() {
 //           currentMidiOutput.sendControlChange(midiI, x * 127, 1);
 //           currentMidiOutput.sendControlChange(midiI, y * 127, 2);
 //         }
-
     
-      for (let i = 0; i < pose.keypoints.length; i++) {
-        // A keypoint is an object describing a body part (like rightArm or leftShoulder)
-        const keypoint = pose.keypoints[i];
-        const { part, position } = keypoint;
-
-        const midiI = poseI * 17 + i;
-
-       
-
-        // UI UPDATING -----
-        //         const $joint = 
-
-        //         if ($joint) {
-        //           // Update display
-        //           $joint.querySelector(`.x`).innerText = $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
-        //           $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
-        //         } else {
-
-        //         }
-      }
-
-      // Update the additional joints ---- FIXME!!!
-      //       const $joint = $pose.querySelector(`.joint[data-part="leftwrist-to-leftshoulder"]`);
-//             
-    
-  }
 
   // console.log(frameRate())
 
@@ -302,15 +284,22 @@ function drawKeypoints() {
     const pose = poses[i];
     for (const { position, part } of pose.keypoints) {
       const { x, y } = position;
-
-      if (dist(x, y, mouseX, mouseY) < jointRadius) {
+      
+      const isTracked = trackedItems.find(item => item.part == part && item.person == i)
+      const mouseOver = dist(x, y, mouseX, mouseY) < jointRadius
+      
+      if (mouseOver || isTracked) {
         fill("#00ffff");
         stroke("white");
         ellipse(x, y, jointRadius + 10);
 
         fill("black");
         stroke("white");
-        text(part, x, y);
+        
+        if (mouseOver) {
+        text(part, x, y);  
+        }
+        
       } else {
         fill("white");
         stroke("black");
