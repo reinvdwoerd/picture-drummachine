@@ -5,6 +5,7 @@
 body {
   height: 100vh;
   position: absolute;
+  align-items: c;
   margin: 0;
   background: #000000;
   color: white;
@@ -51,7 +52,7 @@ main.half-transparent {
 .midi {
   padding: 25px;
   padding-bottom: 100px;
-  margin-top: 52vw;
+  margin-top: 57vw;
   padding-top: 0;
   z-index: 2;
   position: relative;
@@ -106,6 +107,25 @@ main.half-transparent {
   }
 }
 
+@media(min-width: 1700px) {
+  body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 50px;
+  }
+
+  main {
+    position: relative;
+  }
+
+  .midi {
+    width: 50vw;
+    margin-top: 0;
+    padding-right: 50px;
+  }
+}
+
+
 button, select {
   background: none;
   color: #ffffff;
@@ -153,7 +173,7 @@ header {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-gap: 25px;
-  margin-top: 25px;
+  margin-top: 10px;
 }
 
 label.playback-speed-label {

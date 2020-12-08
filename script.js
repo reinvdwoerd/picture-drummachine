@@ -141,10 +141,8 @@ async function draw() {
 
         if ($joint) {
           // Update display
-          $joint.querySelector(`.x`).innerText = x.toPrecision(2);
-          $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
-          $joint.querySelector(`.y`).innerText = y.toPrecision(2);
-          $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
+          $joint.querySelector(`.x`).innerText = $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
+          $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
         } else {
           $pose.innerHTML += `
                   <div class="joint" data-part="${keypoint.part}" data-pose="${poseI}">
@@ -170,6 +168,13 @@ async function draw() {
               `;
         }
       }
+      
+      // Update the additional joints
+      const $joint = $pose.querySelector(`.joint[data-part="leftwrist-to-leftshoulder"]`);
+      // const x = 
+      // const y = 
+      // $joint.querySelector(`.x`).innerText = $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
+      // $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
     } else {
       $joints.innerHTML += `
           <div class="pose" data-pose="${poseI}">
