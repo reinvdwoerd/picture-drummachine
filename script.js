@@ -205,7 +205,7 @@ function drawKeypoints() {
 }
 
 onscroll = () => {
-  $('main').classList.toggle('half-transparent', scrollY > 300)
+  $('main').classList.toggle('half-transparent', scrollY > 100)
 }
 
 $playbackSpeed.oninput = () => {
@@ -227,7 +227,7 @@ function sendTest(i, j) {
 }
 
 WebMidi.enable(err => {
-  console.log(err);
+  if (err) console.log(err);
 
   // Add the list of outputs
   for (const output of WebMidi.outputs) {
