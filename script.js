@@ -93,7 +93,13 @@ async function setup() {
           part: keypoint.part,
           highlight: false,
           type: 'absolute', // or relative
-          velocity: 0
+          velocity: 0, 
+          mapping: {
+            x: [0, 1],
+            y: [0, 1],
+            length: [0, 1],
+            velocity: [0, 1],
+          }
         })
       } else {
         trackedItems.push({
@@ -106,9 +112,10 @@ async function setup() {
           velocity: 0,
           lastDistance: 0,
           mapping: {
-            x: [0, 1]
-            x: [0, 1]
-          x: [0, 1]
+            x: [0, 1],
+            y: [0, 1],
+            length: [0, 1],
+            velocity: [0, 1],
           }
         })
       }
@@ -308,6 +315,9 @@ async function draw() {
             $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(2) * 100;
             $el.querySelector(`.length`).innerText = distanceNow.toPrecision(2);
             $el.classList.toggle('highlight', item.highlighted)
+            
+            $el.querySelector(`.x`).innerText = x.toPrecision(2);
+            $el.querySelector(`.y`).innerText = y.toPrecision(2);
           } else {
               let secondperson = item.personA == item.personB ? '' : `PERSON ${item.personB}<span class="sep">'s</span>` 
               $joints.innerHTML += `
@@ -323,29 +333,38 @@ async function draw() {
                       <span class="x"></span>
                       <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
                       <span>min: </span>
+                      <input onchange="setMapping(${i}, 0, 'x', this.value)"/>
                       <span>max: </span>
-  
-  
-                      <br>
+                      <input onchange="setMapping(${i}, 1, 'x', this.value)"/>
+                    </div>
+                    <div>
                       <span class="sep">y: </span>
                       <span class="y"></span>
                       <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
                       <span>min: </span>
+                      <input onchange="setMapping(${i}, 0, 'y', this.value})"/>
                       <span>max: </span>
-                      
-                      <br>
+                      <input onchange="setMapping(${i}, 1, 'y', this.value})"/>
+                                          </div>
+
+                    <div>
                       <span class="sep">velocity: </span>
                       <span class="velocity"></span>
                       <button class="test" onclick="sendTest(${midiI + 1}, 1)">test</button>
                       <span>min: </span>
+                      <input onchange="setMapping(${i}, 0, 'velocity', this.value)"/>
                       <span>max: </span>
-                      
-                      <br>
+                      <input onchange="setMapping(${i}, 1, 'velocity', this.value)"/>
+                                          </div>
+
+                    <div>
                       <span class="sep">length: </span>
                       <span class="length"></span>
                       <button class="test" onclick="sendTest(${midiI + 1}, 2)">test</button>
                       <span>min: </span>
+                      <input onchange="setMapping(${i}, 0, 'length', this.value)"/>
                       <span>max: </span>
+                      <input onchange="setMapping(${i}, 1, 'length', this.value)"/>
                    </div>
                  </div>
               `;
@@ -490,6 +509,9 @@ function drawKeypoints() {
   }
 }
 
+function setMapping(itemI, minOrMax, property, value) {
+  trackedItems[itemI].mapping[property][minOrMax] = Number(value)
+}
 
   
   

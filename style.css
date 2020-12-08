@@ -237,3 +237,10 @@ button.play-pause {
 .tracked-item:hover .delete:hover {
   opacity: 1;
 }
+
+input {
+  background: none;
+  color: white;
+  border: 1px solid white;
+  width: 30px;
+}
