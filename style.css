@@ -1,9 +1,14 @@
+* {
+    font-family: monospace;
+}
+
 body {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr;
   height: 100vh;
   margin: 0;
-  font-family: sans-serif;
+  background: #101010;
+  color: white;
 }
 
 video {
@@ -32,6 +37,7 @@ main {
 main .inner {
   padding: 25px;
   order: 2;
+  padding-bottom: 0;
 }
 
 .caching {
@@ -45,7 +51,6 @@ main .inner {
 }
 
 .midi {
-  border-left: 1px solid grey;
   padding: 25px;
 }
 
@@ -62,7 +67,7 @@ main .inner {
 .joint {
   margin-top: 5px;
   padding-top: 5px;
-  border-top: 1px solid lightgray;
+  border-top: 1px solid #ffffff3d;
 }
 
 .joint .name {
@@ -73,18 +78,38 @@ main .inner {
 
 .joint .grid {
   display: grid;
-  grid-template-columns: 15px 50px auto 40px;
+  grid-template-columns: 15px 40px auto 40px;
   margin-bottom: 5px;
-  grid-gap: 0 5px;
+  grid-gap: 0 20px;
+  align-items: center;
+}
+
+
+@media(min-width: 800px) {
+  .joints {
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 30px 50px;
+  }
+}
+
+button, select {
+  background: none;
+  color: #ffffff;
+  border: 1px solid #ffffff85;
+}
+
+button {
+  background: none;
+  color: #ffffff;
+  border: 1px solid #ffffff85;
+  opacity: 0.6;
+}
+
+button:hover {
+  opacity: 1;
 }
 
 progress {
   width: 100%;
-}
-
-@media(min-width: 1920px) {
-  .joints {
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 0 20px;
-  }
+  filter: grayscale(1) invert(1);
 }

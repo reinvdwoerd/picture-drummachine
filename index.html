@@ -20,32 +20,30 @@
   </head>  
   <body>
     <main id="main" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);">
-      <div class="inner">
-        <div class="playback-speed-container">
-<!--           <div class="label">playback speed</div> -->
-          <input class="playback-speed" type="range" min="0.125" max="4" value="1" step="0.125"/>  
-          <label class="playback-speed-label"></label>
-          
-          <input class="position" type="range" min="0" max="1" step="any">
-          
-<!--           <label class="playback-speed-label" for="caching">Caching progress</label>
-          <progress class="caching" id="caching" min="0" max="1" value="0"></progress> -->
-        </div>
-
-
-        <code class="info">
-          <div class="current-time"></div>
-          <div class="current-frame"></div>
-          <div class="pose-data"></div>
-        </code>
-      </div>
-      
     </main>
 
 
-
     <div class="midi">
+      <div class="playback-speed-container">
+<!--           <div class="label">playback speed</div> -->
+        <input class="playback-speed" type="range" min="0.125" max="4" value="1" step="0.125"/>  
+        <label class="playback-speed-label"></label>
+
+        <input class="position" type="range" min="0" max="1" step="any">
+
+<!--           <label class="playback-speed-label" for="caching">Caching progress</label>
+        <progress class="caching" id="caching" min="0" max="1" value="0"></progress> -->
+      </div>
+
+
+      <code class="info">
+        <div class="current-time"></div>
+        <div class="current-frame"></div>
+        <div class="pose-data"></div>
+      </code>
+      
       <select class="outputs"></select>
+      
       <div class="joints">
         
       </div>
