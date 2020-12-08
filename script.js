@@ -86,7 +86,8 @@ async function setup() {
           person,
           part: keypoint.part,
           highlight: false,
-          type: 'absolute' // or relative
+          type: 'absolute', // or relative
+          velocity: 0
         })
       } else {
         trackedItems.push({
@@ -95,7 +96,8 @@ async function setup() {
           partA: draggingFromKeypoint.part,
           partB: keypoint.part,
           highlight: false,
-          type: 'relative' // or relative
+          type: 'relative', // or relative
+          velocity: 0
         })
       }
       
@@ -135,6 +137,9 @@ async function setup() {
   frameRate(30);
 }
 
+
+
+// DRAW ===========================================
 async function draw() {
   // THE UPDATING ---
   const currentTime = draggingSlider
@@ -159,7 +164,7 @@ async function draw() {
   try {
     // Video position
     if (!net || video.elt.readyState != 4) return;
-
+    lastPoses = poses
     poses = await net.estimateMultiplePoses(video.elt, {
       flipHorizontal: false,
       maxDetections: 2,
@@ -181,6 +186,62 @@ async function draw() {
   // =================================================
   for (let i = 0; i < trackedItems.length; i++) {
     const item = trackedItems[i];
+      
+    if (item.type == 'absolute') {
+      let $el = $(`.tracked-item[data-part="${item.part}"][data-person="${item.person}"]`);
+      
+      if (poses[item.person]) {
+          const keypoint = poses[item.person].keypoints.find(kp => kp.part == item.part)
+          const lastKeypoint = lastPoses[item.person].keypoints.find(kp => kp.part == item.part)
+          
+          const changeX = clamp((keypoint.position.x - lastKeypoint.position.x) / video.width, 0, 1) 
+          const changeY = clamp((keypoint.position.y - lastKeypoint.position.y) / video.height, 0, 1)
+          const change = changeX + changeY
+          const item.velocity = lerp(item.velocity)
+          
+          if ($el) {
+            const x = clamp(keypoint.position.x / video.width, 0, 1);
+            const y = clamp(keypoint.position.y / video.height, 0, 1);
+
+            if (currentMidiOutput && !video.elt.paused) {
+              currentMidiOutput.sendControlChange(i, map(x, 0, 1, 0, 127), 1);
+              currentMidiOutput.sendControlChange(i, map(y, 0, 1, 0, 127), 2);
+            }
+
+            $el.querySelector(`.x`).innerText = x.toPrecision(2);
+            $el.querySelector(`.y`).innerText = y.toPrecision(2);
+            $el.querySelector(`.y`).innerText = y.toPrecision(2);
+            $el.classList.toggle('highlight', item.highlighted)
+          } else {
+              $joints.innerHTML += `
+                  <div class="tracked-item absolute" data-part="${item.part}" data-person="${item.person}">
+                    <div>
+                      <span class="index">${i}</span>
+                      <span class="name">PERSON ${item.person} <span class="sep">-</span> ${item.part}</span>
+                    </div>
+
+                    <div>
+                      <span class="sep">x: </span>
+                      <span class="x"></span> 
+                      <span class="x"></span> 
+                      <button class="test" onclick="sendTest(${i}, 1)">test</button>
+
+                      <br>
+                      <span class="sep">y: </span>
+                      <span class="y"></span>
+                      <button class="test" onclick="sendTest(${i}, 2)">test</button>
+                      
+                      <br>
+                      <span class="sep">velocity: </span>
+                      <span class="velocity"></span>
+                      <button class="test" onclick="sendTest(${i}, 3)">test</button>
+                    </div>
+                 </div>
+              `;
+          }
+      }
+    }
+    
     
     if (item.type == 'relative') {
       let $el = $(`.tracked-item[data-part="${item.partA}-${item.partB}"]`);
@@ -225,48 +286,7 @@ async function draw() {
           }
         }
     }
-    
-    if (item.type == 'absolute') {
-      let $el = $(`.tracked-item[data-part="${item.part}"][data-person="${item.person}"]`);
-      
-      if (poses[item.person]) {
-          const keypoint = poses[item.person].keypoints.find(kp => kp.part == item.part)
-
-          if ($el) {
-            const x = clamp(keypoint.position.x / video.width, 0, 1);
-            const y = clamp(keypoint.position.y / video.height, 0, 1);
-
-            if (currentMidiOutput && !video.elt.paused) {
-              currentMidiOutput.sendControlChange(i, map(x, 0, 1, 0, 127), 1);
-              currentMidiOutput.sendControlChange(i, map(y, 0, 1, 0, 127), 2);
-            }
-
-            $el.querySelector(`.x`).innerText = x.toPrecision(2);
-            $el.querySelector(`.y`).innerText = y.toPrecision(2);
-            $el.classList.toggle('highlight', item.highlighted)
-          } else {
-              $joints.innerHTML += `
-                  <div class="tracked-item absolute" data-part="${item.part}" data-person="${item.person}">
-                    <div>
-                      <span class="index">${i}</span>
-                      <span class="name">PERSON ${item.person} <span class="sep">-</span> ${item.part}</span>
-                    </div>
-
-                    <div>
-                      <span class="sep">x: </span>
-                      <span class="x"></span> 
-                      <button class="test" onclick="sendTest(${i}, 1)">test</button>
-
-                      <br>
-                      <span class="sep">y: </span>
-                      <span class="y"></span>
-                      <button class="test" onclick="sendTest(${i}, 2)">test</button>
-                      </div>
-                 </div>
-              `;
-          }
-        }
-      }
+  
       
     
   }
@@ -465,6 +485,10 @@ WebMidi.enable(err => {
 // =================================================
 function clamp(num, min, max) {
   return num <= min ? min : num >= max ? max : num;
+}
+
+function lerp(v0, v1, t) {
+    return v0*(1-t)+v1*t
 }
 
 // DRAG AND DROP ===================================
