@@ -15,7 +15,8 @@ const $currentTime = $(".current-time span");
 const $currentFrame = $(".current-frame span");
 const $poseData = $(".pose-data");
 
-let poses = [];
+let lastPoses = []
+let poses = []
 let draggingSlider = false
 let wasPaused = null
 
@@ -147,7 +148,10 @@ async function draw() {
         } else {
           $pose.innerHTML += `
                   <div class="joint" data-part="${keypoint.part}" data-pose="${poseI}">
-                    <div class="name">${keypoint.part}</div>
+                    <div class="name">
+                      <span class="index">${midiI}</span>
+                      <span class="part">${keypoint.part}</span>
+                    </div>
 
                     <div class="grid">
                       <span class="label">x:</span>
@@ -179,14 +183,14 @@ async function draw() {
                 <span class="label">x:</span>
                 <span class="x"></span>
                 <progress class="progress-x" min="0" max="1" value="0"></progress>
-                <button onclick="sendTest(${midiI}, 1)">test</button>
+                <button onclick="sendTest(${poseI * 17 + 17}, 1)">test</button>
               </div>
 
               <div class="grid">
                 <span class="label">y:</span>
                 <span class="y"></span>
                 <progress class="progress-y" min="0" max="1" value="0"></progress>
-                <button onclick="sendTest(${midiI}, 2)">test</button>
+                <button onclick="sendTest(${poseI * 17 + 17}, 2)">test</button>
               </div>
            </div>
           </div>
@@ -234,7 +238,7 @@ function drawKeypoints() {
 
 onscroll = () => {
   const scrollRange = 300
-  $('main').style.opacity = Math.max((scrollRange - scrollY) / scrollRange, 0.3)
+  $('main').style.opacity = Math.max((scrollRange - scrollY) / scrollRange, 0.1)
 }
 
 

@@ -35,7 +35,7 @@ main {
   top: 0;
   position: fixed;
   flex-direction: column;
-  transition: opacity 0.5s;
+  transition: opacity 0.2s;
 }
 
 main.half-transparent {
@@ -75,8 +75,11 @@ main.half-transparent {
 
 .joint .name {
   text-transform: uppercase;
-  opacity: 0.6;
   letter-spacing: 0.1em;
+}
+
+.joint .name .index {
+  opacity: 0.6;
 }
 
 .joint .grid {
