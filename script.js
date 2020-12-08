@@ -46,6 +46,7 @@ async function setup() {
           trackedItems.push({
             person: i,
             part,
+            highlight: false,
             type: 'absolute' // or relative
           })
           return;
@@ -183,7 +184,7 @@ async function draw() {
 
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
             $el.querySelector(`.y`).innerText = y.toPrecision(2);
-
+            $el.classList.toggle('highlight', item.highlighted)
           } else {
               $joints.innerHTML += `
                   <div class="tracked-item absolute" data-part="${item.part}">
@@ -194,10 +195,14 @@ async function draw() {
 
                     <div>
                       <span class="sep">x: </span>
-                      <span class="x"></span> <br>
+                      <span class="x"></span> 
+                      <button class="test" onclick="sendTest(${i}, 1)">test</button>
+
+                      <br>
                       <span class="sep">y: </span>
                       <span class="y"></span>
-                    </div>
+                      <button class="test" onclick="sendTest(${i}, 2)">test</button>
+                      </div>
                  </div>
               `;
           }
@@ -285,10 +290,10 @@ function drawKeypoints() {
     for (const { position, part } of pose.keypoints) {
       const { x, y } = position;
       
-      const isTracked = trackedItems.find(item => item.part == part && item.person == i)
+      const trackedItem = trackedItems.find(item => item.part == part && item.person == i)
       const mouseOver = dist(x, y, mouseX, mouseY) < jointRadius
       
-      if (mouseOver || isTracked) {
+      if (mouseOver || trackedItem) {
         fill("#00ffff");
         stroke("white");
         ellipse(x, y, jointRadius + 10);
@@ -297,10 +302,17 @@ function drawKeypoints() {
         stroke("white");
         
         if (mouseOver) {
-        text(part, x, y);  
+          // if (trackedItem) {
+          //     trackedItem.highlight = true;
+          // } 
+          text(part, x, y);  
         }
         
       } else {
+        // if (trackedItem) {
+        //   trackedItem.highlight = false;
+        // }
+        
         fill("white");
         stroke("black");
         ellipse(x, y, jointRadius);

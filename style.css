@@ -131,12 +131,13 @@ button, select {
 button {
   background: none;
   color: #ffffff;
-  border: 1px solid #ffffff85;
+  border: 1px solid transparent;
   opacity: 0.6;
 }
 
 button:hover {
   opacity: 1;
+  border: 1px solid #ffffff85;
 }
 
 progress {
