@@ -24,7 +24,7 @@ canvas {
   margin: 0 auto;
   width: 100% !important;
   height: unset !important;
-  filter: grayscale(1);
+  /* filter: grayscale(1); */
 }
 
 canvas:hover {
@@ -33,6 +33,7 @@ canvas:hover {
 
 main {
   display: flex;
+  padding: 50px;
   top: 0;
   position: fixed;
   flex-direction: column;

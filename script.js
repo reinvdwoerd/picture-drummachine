@@ -20,11 +20,30 @@ let poses = []
 let draggingSlider = false
 let wasPaused = null
 
+
+// Constants
+let jointRadius = 20
+
+
+
 async function setup() {
   let canvas = createCanvas(1920, 1080);
   canvas.parent("main");
 
 
+  canvas.mousePressed(() => {
+    // It's on a dot
+    
+    
+    // It's on the background
+    if (video.elt.paused) {
+      video.loop();
+    } else {
+      video.pause();
+    }
+  });
+  
+  
   // STYLE
   strokeWeight(5);
   stroke("white");
@@ -181,26 +200,6 @@ async function draw() {
             <div class="name">
               PERSON ${poseI}
             </div>
-            <div class="joint" data-part="leftwrist-to-leftshoulder" data-pose="${poseI}">
-              <div class="name">
-                <span class="index">17</span>
-                <span class="part">LEFTWRIST TO -SHOULDER</span>
-              </div>
-
-              <div class="grid">
-                <span class="label">x:</span>
-                <span class="x"></span>
-                <div></div>
-                <button onclick="sendTest(${poseI * 17 + 17}, 1)">test</button>
-              </div>
-
-              <div class="grid">
-                <span class="label">y:</span>
-                <span class="y"></span>
-                <div></div>
-                <button onclick="sendTest(${poseI * 17 + 17}, 2)">test</button>
-              </div>
-           </div>
           </div>
         `;
     }
@@ -236,10 +235,19 @@ function drawSkeleton() {
 // A function to draw ellipses over the detected keypoints
 function drawKeypoints() {
   for (const pose of poses) {
-    for (const keypoint of pose.keypoints) {
-      stroke("black");
-      fill("white");
-      ellipse(keypoint.position.x, keypoint.position.y, 20, 20);
+    for (const {position} of pose.keypoints) {
+      const {x, y} = position
+      
+      if (dist(x, y, mouseX, mouseY) < jointRadius) {
+        fill("#00ffff");
+        stroke("white");
+        ellipse(position.x, position.y, jointRadius + 10);
+      } else {
+        fill("white");
+        stroke("black");
+        ellipse(position.x, position.y, jointRadius);
+      }
+      
     }
   }
 }
