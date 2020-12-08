@@ -39,6 +39,11 @@ main .inner {
 }
 
 
+.pose > .name {
+    font-weight: bold;
+    margin-top: 20px;
+}
+
 .midi {
   border-left: 1px solid grey;
   padding: 25px;
