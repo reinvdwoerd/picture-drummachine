@@ -20,6 +20,7 @@ const $poseData = $(".pose-data");
 let lastPoses = [];
 let poses = [];
 let trackedItems = []
+let draggingFromKeypoint = null;
 
 // Slider
 let draggingSlider = false;
@@ -30,37 +31,59 @@ let jointRadius = 20;
 
 
 
+function searchIfOnAKeypoint()  {
+  for (let i = 0; i < poses.length; i++) {
+      const pose = poses[i];
+      for (const keypoint of pose.keypoints) {
+        const { position, part } = keypoint
+        const { x, y } = position;
+
+        // It's on a dot
+        if (dist(x, y, mouseX, mouseY) < jointRadius) {
+          return [i, keypoint]
+        }
+    }
+  }
+}
+
 
 async function setup() {
   let canvas = createCanvas(1920, 1080);
   canvas.parent("main");
 
   canvas.mousePressed(() => {
-    // It's on a dot
-    for (let i = 0; i < poses.length; i++) {
-      const pose = poses[i];
-      for (const { position, part } of pose.keypoints) {
-        const { x, y } = position;
-
-        if (dist(x, y, mouseX, mouseY) < jointRadius) {
-          trackedItems.push({
-            person: i,
-            part,
-            highlight: false,
-            type: 'absolute' // or relative
-          })
-          return;
-        }
-      }
-    }
-
-    // It's on the background
+    const [person, keypoint] = searchIfOnAKeypoint()
+    
+    if (keypoint) {
+      draggingFromKeypoint = keypoint
+    } else {
+      // It's on the background
     if (video.elt.paused) {
       video.loop();
     } else {
       video.pause();
     }
+    }
+    
+    return;
+    
+    
   });
+  
+  
+  canvas.mouseReleased(() => {
+    
+    
+    
+    trackedItems.push({
+      personA: i,
+      personB: i,
+      partA: draggingFromKeypoint.part,
+      highlight: false,
+      type: 'absolute' // or relative
+    })
+    
+  })
 
   // STYLE
   strokeWeight(5);
