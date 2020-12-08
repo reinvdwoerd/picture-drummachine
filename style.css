@@ -3,12 +3,10 @@
 }
 
 body {
-  /* display: grid; */
-  /* grid-template-columns: 1fr; */
   height: 100vh;
   position: absolute;
   margin: 0;
-  background: #101010;
+  background: #000000;
   color: white;
   width: 100%;
   top: 0;
@@ -53,7 +51,7 @@ main.half-transparent {
 .midi {
   padding: 25px;
   padding-bottom: 100px;
-  margin-top: 58vw;
+  margin-top: 52vw;
   padding-top: 0;
   z-index: 2;
   position: relative;
@@ -129,6 +127,8 @@ input[type="range"] {
 
 input.playback-speed {
     max-width: 200px;
+    margin: 0 10px;
+    position: relative;
 }
 
 select.outputs {
@@ -137,4 +137,22 @@ select.outputs {
 
 code.info {
     margin: 10px 0;
+}
+
+
+header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 25px;
+  margin-top: 25px;
+}
+
+label.playback-speed-label {
+    display: flex;
+    align-items: center;
+}
+
+input.position {
+    max-width: 100%;
+    width: 100%;
 }

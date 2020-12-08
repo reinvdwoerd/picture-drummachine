@@ -63,7 +63,7 @@ async function draw() {
   // THE UPDATING ---
   const currentTime = video.elt.currentTime;
   const currentFrame = Math.floor(currentTime * 29.97);
-  $currentTime.innerText = currentTime;
+  $currentTime.innerText = `${currentTime.toPrecision(3)}s`;
   $currentFrame.innerText = currentFrame;
   $positionSlider.value = currentTime;
 

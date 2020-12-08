@@ -26,20 +26,27 @@
     <div class="midi">
       <input class="position" type="range" min="0" max="1" step="any">
       
-      <div class="playback-speed-container">
-        <label class="playback-speed-label">
-          speed: <input class="playback-speed" type="range" min="0.125" max="4" value="1" step="0.125"/>  <span>1</span>x
-        </label>  
-      </div>
-
-
-      <code class="info">
-        <div class="current-time">time:  <span></span></div>
-        <div class="current-frame">frame: <span></span></div>
-        <div class="pose-data"></div>
-      </code>
       
-      <select class="outputs"></select>
+      <header>
+        <div class="left">
+          <div class="playback-speed-container">
+            <label class="playback-speed-label">
+              speed: <input class="playback-speed" type="range" min="0.125" max="4" value="1" step="0.125"/>  <span>1</span>x
+            </label>  
+          </div>
+
+          <code class="info">
+            <div class="current-time">time:  <span></span></div>
+            <div class="current-frame">frame: <span></span></div>
+            <div class="pose-data"></div>
+          </code>
+        </div>
+        
+        <div class="right">
+          <select class="outputs"></select>
+        </div>
+      </header>
+      
       
       <div class="joints">
         
