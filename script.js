@@ -19,7 +19,7 @@ const $poseData = $(".pose-data");
 // Poses, mappings, data
 let lastPoses = [];
 let poses = [];
-let mappings = {}
+let trackedJoints = [[], [], [], [], []]
 
 // Slider
 let draggingSlider = false;
@@ -43,7 +43,7 @@ async function setup() {
         const { x, y } = position;
 
         if (dist(x, y, mouseX, mouseY) < jointRadius) {
-          
+          trackedJoints[i].push(part)
           return;
         }
       }
@@ -134,11 +134,60 @@ async function draw() {
     const pose = poses[poseI];
 
     const $pose = $(`.pose[data-pose="${poseI}"]`);
-
+    
     if ($pose) {
-      let leftWristPosition;
-      let leftShoulderPosition;
+        let skeleton = posenet.getAdjacentKeyPoints(pose.keypoints);
+        skeleton.forEach(([partA, partB], i) => {
+          let $el = $pose.querySelector(`.joint[data-part-a="${partA.part}"][[data-part-b="${partB.part}"]]`);
+          
+          if ($el) {
+            
+          } else {
+              $pose.innerHTML += `
+                  <div class="joint" data-part="${part}" data-pose="${poseI}">
+                    <div class="name">
+                      <span class="index">${midiI}</span>
+                      <span class="part">${part}</span>
+                    </div>
 
+                    <div class="grid">
+                      <span class="label">x:</span>
+                      <span class="x"></span>
+                      <progress class="progress-x" min="0" max="1" value="0"></progress>
+                      <button onclick="sendTest(${midiI}, 1)">test</button>
+                    </div>
+
+                    <div class="grid">
+                      <span class="label">y:</span>
+                      <span class="y"></span>
+                      <progress class="progress-y" min="0" max="1" value="0"></progress>
+                      <button onclick="sendTest(${midiI}, 2)">test</button>
+                    </div>
+                 </div>
+              `;
+          }
+        });
+    } else {
+      $joints.innerHTML += `
+          <div class="pose" data-pose="${poseI}" style="order: 17">
+            <div class="name">
+              PERSON ${poseI}
+            </div>
+          </div>
+      `;
+    }
+    
+     // Normalize values ----
+//         const x = clamp(position.x / video.width, 0, 1);
+//         const y = clamp(position.y / video.height, 0, 1);
+
+//         // MIDI OUT ------
+//         if (currentMidiOutput && !video.elt.paused) {
+//           currentMidiOutput.sendControlChange(midiI, x * 127, 1);
+//           currentMidiOutput.sendControlChange(midiI, y * 127, 2);
+//         }
+
+    
       for (let i = 0; i < pose.keypoints.length; i++) {
         // A keypoint is an object describing a body part (like rightArm or leftShoulder)
         const keypoint = pose.keypoints[i];
@@ -146,56 +195,17 @@ async function draw() {
 
         const midiI = poseI * 17 + i;
 
-        if (part == "leftShoulder") {
-          leftShoulderPosition = position;
-        }
-
-        if (part == "leftWrist") {
-          leftWristPosition = position;
-        }
-
-        // Normalize values ----
-        const x = clamp(position.x / video.width, 0, 1);
-        const y = clamp(position.y / video.height, 0, 1);
-
-        // MIDI OUT ------
-        if (currentMidiOutput && !video.elt.paused) {
-          currentMidiOutput.sendControlChange(midiI, x * 127, 1);
-          currentMidiOutput.sendControlChange(midiI, y * 127, 2);
-        }
+       
 
         // UI UPDATING -----
-        //         const $joint = $pose.querySelector(
-        //           `.joint[data-part="${part}"]`
-        //         );
+        //         const $joint = 
 
         //         if ($joint) {
         //           // Update display
         //           $joint.querySelector(`.x`).innerText = $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
         //           $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
         //         } else {
-        //           $pose.innerHTML += `
-        //                   <div class="joint" data-part="${part}" data-pose="${poseI}">
-        //                     <div class="name">
-        //                       <span class="index">${midiI}</span>
-        //                       <span class="part">${part}</span>
-        //                     </div>
 
-        //                     <div class="grid">
-        //                       <span class="label">x:</span>
-        //                       <span class="x"></span>
-        //                       <progress class="progress-x" min="0" max="1" value="0"></progress>
-        //                       <button onclick="sendTest(${midiI}, 1)">test</button>
-        //                     </div>
-
-        //                     <div class="grid">
-        //                       <span class="label">y:</span>
-        //                       <span class="y"></span>
-        //                       <progress class="progress-y" min="0" max="1" value="0"></progress>
-        //                       <button onclick="sendTest(${midiI}, 2)">test</button>
-        //                     </div>
-        //                  </div>
-        //               `;
         //         }
       }
 
@@ -210,15 +220,7 @@ async function draw() {
       //         currentMidiOutput.sendControlChange(poseI * 17 + 17, map(x, -1, 1, 0, 127), 1);
       //         currentMidiOutput.sendControlChange(poseI * 17 + 17, map(y, -1, 1, 0, 127), 2);
       //       }
-    } else {
-      $joints.innerHTML += `
-          <div class="pose" data-pose="${poseI}" style="order: 17">
-            <div class="name">
-              PERSON ${poseI}
-            </div>
-          </div>
-        `;
-    }
+    
   }
 
   // console.log(frameRate())
