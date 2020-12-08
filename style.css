@@ -11,6 +11,7 @@ body {
   color: white;
   width: 100%;
   top: 0;
+  
 }
 
 
@@ -33,7 +34,7 @@ canvas:hover {
 
 main {
   display: flex;
-  padding: 50px;
+  /* padding: 50px; */
   top: 0;
   position: sticky;
   flex-direction: column;
@@ -204,6 +205,8 @@ button.play-pause {
 
 .playback-controls {
   order: 2;
+  padding: 50px;
+  padding-bottom: 0;
 }
 
 .sep, .index {

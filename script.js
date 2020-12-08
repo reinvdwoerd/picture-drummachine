@@ -53,9 +53,12 @@ async function setup() {
   let canvas = createCanvas(1920, 1080);
   canvas.parent("main");
 
+  
+  trackedItems = JSON.parse(localStorage.getItem('trackedItems')) || []
+  
   canvas.mousePressed(() => {
     const result = searchIfOnAKeypoint()
-        console.log(result)
+    // console.log(result)
 
     if (result) {
       draggingFromKeypoint = result[1]
@@ -74,7 +77,7 @@ async function setup() {
   canvas.mouseReleased(() => {
     const result = searchIfOnAKeypoint()
     
-    console.log(result)
+    // console.log(result)
 
     if (result) {
       const [person, keypoint] = result
@@ -98,6 +101,8 @@ async function setup() {
       
       draggingFromKeypoint = null
       draggingFromPerson = null
+      
+      localStorage.setItem('trackedItems', JSON.stringify(trackedItems))
     }
   })
 
@@ -197,11 +202,12 @@ async function draw() {
             $el.querySelector(`.y`).innerText = y.toPrecision(2);
             $el.classList.toggle('highlight', item.highlighted)
           } else {
+              let secondperson = item.personA == item.personB ? '' : `PERSON ${item.personB} <span class="sep">-</span>` 
               $joints.innerHTML += `
                   <div class="tracked-item relative" data-part="${item.partA}-${item.partB}" data-person="${item.personA}-${item.personB}">
                     <div>
                       <span class="index">${i}</span>
-                      <span class="name">PERSON ${item.personA} <span class="sep">-</span> ${item.partA} <span class="sep">—</span> PERSON ${item.personB} <span class="sep">-</span> ${item.partB}</span>
+                      <span class="name">PERSON ${item.personA} <span class="sep">-</span> ${item.partA} <span class="sep">to</span> ${secondperson} ${item.partB}</span>
                     </div>
 
                     <div>
@@ -323,11 +329,14 @@ async function draw() {
   }
   
   for (const item of trackedItems) {
-    if (item.type == 'relative') {
+    if (item.type == 'relative' && poses[item.personA] && poses[item.personB]) {
         const keypointA = poses[item.personA].keypoints.find(kp => kp.part == item.partA)
         const keypointB = poses[item.personB].keypoints.find(kp => kp.part == item.partB)
         stroke("#00ffff");
         line(keypointA.position.x, keypointA.position.y, keypointB.position.x, keypointB.position.y);
+        fill("#00ffff");
+        ellipse(keypointA.position.x, keypointA.position.y, jointRadius);
+        ellipse(keypointB.position.x, keypointB.position.y, jointRadius);
     }
   }
 }
@@ -349,6 +358,7 @@ function drawSkeleton() {
     }
   }
 }
+
 
 // A function to draw ellipses over the detected keypoints
 function drawKeypoints() {
