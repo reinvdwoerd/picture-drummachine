@@ -216,7 +216,8 @@ function drawKeypoints() {
 }
 
 onscroll = () => {
-  $('main').classList.toggle('half-transparent', scrollY > 100)
+  const scrollRange = 300
+  $('main').style.opacity = Math.max((scrollRange - scrollY) / scrollRange, 0.3)
 }
 
 $playbackSpeed.oninput = () => {
@@ -224,8 +225,12 @@ $playbackSpeed.oninput = () => {
   $playbackSpeedLabel.innerText = $playbackSpeed.value;
 };
 
-$positionSlider.oninput = () => {
+
+$positionSlider.onmousedown = () => {
   wasPaused = video.elt.paused
+}
+
+$positionSlider.oninput = () => {
   video.pause()
   video.time($positionSlider.value);
   draggingSlider = true

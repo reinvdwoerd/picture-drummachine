@@ -58,6 +58,9 @@ main.half-transparent {
   transition: opacity .1s;
 }
 
+.current-frame {
+  display: none;
+}
 
 .joints {
     display: grid;
@@ -160,6 +163,6 @@ input.position {
     width: 100%;
 }
 
-body:not(:hover) .midi {
+/* body:not(:hover) .midi {
   opacity: 0.5;
-}
+} */
