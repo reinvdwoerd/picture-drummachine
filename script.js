@@ -1,17 +1,19 @@
-// Globals
+/* global strokeWeight, stroke, frameRate, posenet, createVideo, createCanvas, fill, ellipse, image, line, width, height, WebMidi */
 let video, net, currentMidiOutput;
 
-const $playbackSpeed = document.querySelector(".playback-speed");
-const $playbackSpeedLabel = document.querySelector(".playback-speed-label");
-const $positionSlider = document.querySelector(".position");
-const $cachingProgress = document.querySelector("#caching");
+const $ = selector => document.querySelector(selector)
 
-const $midiOutputSelect = document.querySelector(".midi select.outputs");
-const $joints = document.querySelector(".midi .joints");
+const $playbackSpeed = $(".playback-speed");
+const $playbackSpeedLabel = $(".playback-speed-label");
+const $positionSlider = $(".position");
+const $cachingProgress = $("#caching");
 
-const $currentTime = document.querySelector(".current-time");
-const $currentFrame = document.querySelector(".current-frame");
-const $poseData = document.querySelector(".pose-data");
+const $midiOutputSelect = $(".midi select.outputs");
+const $joints = $(".midi .joints");
+
+const $currentTime = $(".current-time");
+const $currentFrame = $(".current-frame");
+const $poseData = $(".pose-data");
 
 let poses = [];
 
@@ -81,6 +83,20 @@ async function draw() {
   // =================================================
   for (let poseI = 0; poseI < poses.length; poseI++) {
       const pose = poses[poseI];
+    
+      const $pose = $(`.pose[data-pose="${poseI}"]`);
+      
+      if (!$pose) {
+        $joints.innerHTML += `
+          <div class="pose" data-pose="${poseI}">
+            <div class="name">
+              ${poseI}
+            </div>
+          </div>
+        `
+      }
+    
+    
       for (let i = 0; i < pose.keypoints.length; i++) {
         // A keypoint is an object describing a body part (like rightArm or leftShoulder)
         const keypoint = pose.keypoints[i];
@@ -110,15 +126,10 @@ async function draw() {
 
 
         // UI UPDATING -----
-        const $joint = document.querySelector(`.joint[data-part="${keypoint.part}"][data-pose="${poseI}"]`);
+        const $joint = $pose.querySelector(`.joint[data-part="${keypoint.part}"]`);
 
-        if ($joint) {
-          $joint.querySelector(`.x`).innerText = x.toPrecision(2);
-          $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
-          $joint.querySelector(`.y`).innerText = y.toPrecision(2);
-          $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
-        } else {
-          $joints.innerHTML += `
+        if (!$joint) {
+          $pose.innerHTML += `
                 <div class="joint" data-part="${keypoint.part}" data-pose="${poseI}">
                   <div class="name">${midiI}: person ${poseI} - ${keypoint.part}</div>
 
@@ -136,8 +147,14 @@ async function draw() {
                     <button onclick="sendTest(${midiI}, 2)">test</button>
                   </div>
                </div>
-              `;
+            `;
         }
+        
+        // Update display
+        $joint.querySelector(`.x`).innerText = x.toPrecision(2);
+        $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
+        $joint.querySelector(`.y`).innerText = y.toPrecision(2);
+        $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
      }
   }
 
