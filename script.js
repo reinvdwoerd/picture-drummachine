@@ -194,6 +194,8 @@ async function draw() {
   // =================================================
   for (let i = 0; i < trackedItems.length; i++) {
     const item = trackedItems[i];
+    
+    const midiI = i * 2;
       
     if (item.type == 'absolute') {
       let $el = $(`.tracked-item[data-part="${item.part}"][data-person="${item.person}"]`);
@@ -216,10 +218,10 @@ async function draw() {
             const x = clamp(keypoint.position.x / video.width, 0, 1);
             const y = clamp(keypoint.position.y / video.height, 0, 1);
 
-            if (currentMidiOutput) {
-              currentMidiOutput.sendControlChange(i, map(x, 0, 1, 0, 127), 1);
-              currentMidiOutput.sendControlChange(i, map(y, 0, 1, 0, 127), 2);
-              currentMidiOutput.sendControlChange(i, map(item.velocity, 0, 1, 0, 127), 3);
+            if (currentMidiOutput && !video.elt.playing) {
+              currentMidiOutput.sendControlChange(midiI, map(x, 0, 1, 0, 127), 1);
+              currentMidiOutput.sendControlChange(midiI, map(y, 0, 1, 0, 127), 2);
+              currentMidiOutput.sendControlChange(midiI + 1, map(item.velocity, 0, 1, 0, 127), 3);
             }
 
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
@@ -239,17 +241,17 @@ async function draw() {
                       <span class="sep">x: </span>
                       <span class="x"></span> 
                       <span class="x"></span> 
-                      <button class="test" onclick="sendTest(${i}, 1)">test</button>
+                      <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
 
                       <br>
                       <span class="sep">y: </span>
                       <span class="y"></span>
-                      <button class="test" onclick="sendTest(${i}, 2)">test</button>
+                      <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
                       
                       <br>
                       <span class="sep">velocity: </span>
                       <span class="velocity"></span>
-                      <button class="test" onclick="sendTest(${i}, 3)">test</button>
+                      <button class="test" onclick="sendTest(${midiI + 1}, 3)">test</button>
                     </div>
                  </div>
               `;
@@ -288,11 +290,11 @@ async function draw() {
           if ($el) {
             
 
-            if (currentMidiOutput) {
-              currentMidiOutput.sendControlChange(i, map(x, -1, 1, 0, 127), 1);
-              currentMidiOutput.sendControlChange(i, map(y, -1, 1, 0, 127), 2);
-              currentMidiOutput.sendControlChange(i, clamp(map(item.velocity, 0, 1, 0, 127), 0, 127), 3);
-              currentMidiOutput.sendControlChange(i, map(distanceNow, 0, 1, 0, 127), 4);
+            if (currentMidiOutput && !video.elt.playing) {
+              currentMidiOutput.sendControlChange(midiI, map(x, -1, 1, 0, 127), 1);
+              currentMidiOutput.sendControlChange(midiI, map(y, -1, 1, 0, 127), 2);
+              currentMidiOutput.sendControlChange(midiI + 1, clamp(map(item.velocity, 0, 1, 0, 127), 0, 127), 1);
+              currentMidiOutput.sendControlChange(midiI + 1, map(distanceNow, 0, 1, 0, 127), 2);
             }
 
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
@@ -313,22 +315,22 @@ async function draw() {
                     <div>
                       <span class="sep">x: </span>
                       <span class="x"></span> 
-                      <button class="test" onclick="sendTest(${i}, 1)">test</button>
+                      <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
 
                       <br>
                       <span class="sep">y: </span>
                       <span class="y"></span>
-                      <button class="test" onclick="sendTest(${i}, 2)">test</button>
+                      <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
                       
                       <br>
                       <span class="sep">velocity: </span>
                       <span class="velocity"></span>
-                      <button class="test" onclick="sendTest(${i}, 3)">test</button>
+                      <button class="test" onclick="sendTest(${midiI + 1}, 1)">test</button>
                       
                       <br>
                       <span class="sep">length: </span>
                       <span class="length"></span>
-                      <button class="test" onclick="sendTest(${i}, 4)">test</button>
+                      <button class="test" onclick="sendTest(${midiI + 1}, 2)">test</button>
                     </div>
                  </div>
               `;
