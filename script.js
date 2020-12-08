@@ -112,7 +112,7 @@ async function draw() {
         const keypoint = pose.keypoints[i];
         const { part, position } = keypoint;
 
-        const midiI = poseI * 16 + i;
+        const midiI = poseI * 17 + i;
 
         // Normalize values ----
         const x = clamp(position.x / video.width, 0, 1);
@@ -172,6 +172,23 @@ async function draw() {
             <div class="name">
               PERSON ${poseI}
             </div>
+            <div class="joint" data-part="leftwrist-to-leftshoulder" data-pose="${poseI}">
+              <div class="name">LEFTWRIST TO LEFTSHOULDER</div>
+
+              <div class="grid">
+                <span class="label">x:</span>
+                <span class="x"></span>
+                <progress class="progress-x" min="0" max="1" value="0"></progress>
+                <button onclick="sendTest(${midiI}, 1)">test</button>
+              </div>
+
+              <div class="grid">
+                <span class="label">y:</span>
+                <span class="y"></span>
+                <progress class="progress-y" min="0" max="1" value="0"></progress>
+                <button onclick="sendTest(${midiI}, 2)">test</button>
+              </div>
+           </div>
           </div>
         `;
     }
@@ -220,6 +237,9 @@ onscroll = () => {
   $('main').style.opacity = Math.max((scrollRange - scrollY) / scrollRange, 0.3)
 }
 
+
+// INPUT =======================================
+// =============================================
 $playbackSpeed.oninput = () => {
   video.speed($playbackSpeed.value);
   $playbackSpeedLabel.innerText = $playbackSpeed.value;
@@ -247,6 +267,9 @@ $midiOutputSelect.onchange = () => {
   console.log("changed output to: ", currentMidiOutput.name);
 };
 
+
+// MIDI ========================================
+// =============================================
 function sendTest(i, j) {
   currentMidiOutput.sendControlChange(i, 127, j);
 }
@@ -264,11 +287,14 @@ WebMidi.enable(err => {
   currentMidiOutput = WebMidi.outputs[0];
 });
 
-// UTILITIES ===================================
+
+
+// UTILITIES =======================================
 // =================================================
 function clamp(num, min, max) {
   return num <= min ? min : num >= max ? max : num;
 }
+
 
 // DRAG AND DROP ===================================
 // =================================================
@@ -284,25 +310,6 @@ function dropHandler(ev) {
   video.elt.src = URL.createObjectURL(ev.dataTransfer.files[0]);
   $positionSlider.setAttribute("max", video.elt.duration);
   localStorage.setItem("videoSrc", video.elt.src);
-
-  if (ev.dataTransfer.items) {
-    // Use DataTransferItemList interface to access the file(s)
-    for (var i = 0; i < ev.dataTransfer.items.length; i++) {
-      // If dropped items aren't files, reject them
-      if (ev.dataTransfer.items[i].kind === "file") {
-        var file = ev.dataTransfer.items[i].getAsFile();
-        console.log("... file[" + i + "].name = " + file.name);
-      }
-    }
-  } else {
-    // Use DataTransfer interface to access the file(s)
-    console.log(ev.dataTransfer.files);
-    for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-      console.log(
-        "... file[" + i + "].name = " + ev.dataTransfer.files[i].name
-      );
-    }
-  }
 }
 
 function dragOverHandler(ev) {
