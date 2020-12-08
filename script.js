@@ -306,13 +306,13 @@ async function draw() {
             if (currentMidiOutput && !video.elt.paused) {
               currentMidiOutput.sendControlChange(midiI, map(x, -1, 1, 0, 127), 1);
               currentMidiOutput.sendControlChange(midiI, map(y, -1, 1, 0, 127), 2);
-              currentMidiOutput.sendControlChange(midiI + 1, clamp(map(item.velocity * 100, 0, 1, 0, 127), 0, 127), 1);
+              currentMidiOutput.sendControlChange(midiI + 1, clamp(map(item.velocity, 0, 1, 0, 127), 0, 127), 1);
               currentMidiOutput.sendControlChange(midiI + 1, map(distanceNow, 0, 1, 0, 127), 2);
             }
 
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
             $el.querySelector(`.y`).innerText = y.toPrecision(2);
-            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(2) * 100;
+            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(1);
             $el.querySelector(`.length`).innerText = distanceNow.toPrecision(2);
             $el.classList.toggle('highlight', item.highlighted)
             
@@ -332,18 +332,18 @@ async function draw() {
                       <span class="sep">x: </span>
                       <span class="x"></span>
                       <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
-                      <span>min: </span>
+                      <span class="sep">min: </span>
                       <input onchange="setMapping(${i}, 0, 'x', this.value)"/>
-                      <span>max: </span>
+                      <span class="sep">max: </span>
                       <input onchange="setMapping(${i}, 1, 'x', this.value)"/>
                     </div>
                     <div>
                       <span class="sep">y: </span>
                       <span class="y"></span>
                       <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
-                      <span>min: </span>
+                      <span class="sep">min: </span>
                       <input onchange="setMapping(${i}, 0, 'y', this.value})"/>
-                      <span>max: </span>
+                      <span class="sep">max: </span>
                       <input onchange="setMapping(${i}, 1, 'y', this.value})"/>
                                           </div>
 
@@ -351,9 +351,9 @@ async function draw() {
                       <span class="sep">velocity: </span>
                       <span class="velocity"></span>
                       <button class="test" onclick="sendTest(${midiI + 1}, 1)">test</button>
-                      <span>min: </span>
+                      <span class="sep">min: </span>
                       <input onchange="setMapping(${i}, 0, 'velocity', this.value)"/>
-                      <span>max: </span>
+                      <span class="sep">max: </span>
                       <input onchange="setMapping(${i}, 1, 'velocity', this.value)"/>
                                           </div>
 
@@ -361,9 +361,9 @@ async function draw() {
                       <span class="sep">length: </span>
                       <span class="length"></span>
                       <button class="test" onclick="sendTest(${midiI + 1}, 2)">test</button>
-                      <span>min: </span>
+                      <span class="sep">min: </span>
                       <input onchange="setMapping(${i}, 0, 'length', this.value)"/>
-                      <span>max: </span>
+                      <span class="sep">max: </span>
                       <input onchange="setMapping(${i}, 1, 'length', this.value)"/>
                    </div>
                  </div>

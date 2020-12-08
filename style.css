@@ -241,6 +241,26 @@ button.play-pause {
 input {
   background: none;
   color: white;
-  border: 1px solid white;
+  border: 1px solid #ffffff42;
   width: 30px;
+}
+
+.tracked-item div:not(:first-child) {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr .5fr .5fr .5fr .5fr;
+    align-items: center;
+    margin-bottom: 5px;
+    margin-top: 10px;
+    grid-gap: 10px 10px;
+}
+
+span.index {
+    background: white;
+    color: black;
+    opacity: 1;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
 }
