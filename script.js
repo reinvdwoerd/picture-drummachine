@@ -208,7 +208,7 @@ async function draw() {
 
             const changeX = clamp((keypoint.position.x - lastKeypoint.position.x) / video.width, 0, 1) 
             const changeY = clamp((keypoint.position.y - lastKeypoint.position.y) / video.height, 0, 1)
-            const change = Math.abs(changeX + changeY)
+            const change = Math.abs(changeX + changeY) * 10
 
             item.velocity = Math.max(lerp(item.velocity, change, 0.5), 0.001)
           }
@@ -218,15 +218,16 @@ async function draw() {
             const x = clamp(keypoint.position.x / video.width, 0, 1);
             const y = clamp(keypoint.position.y / video.height, 0, 1);
 
-            if (currentMidiOutput && !video.elt.playing) {
+            if (currentMidiOutput && !video.elt.paused) {
+              console.log('sent!!!')
               currentMidiOutput.sendControlChange(midiI, map(x, 0, 1, 0, 127), 1);
               currentMidiOutput.sendControlChange(midiI, map(y, 0, 1, 0, 127), 2);
-              currentMidiOutput.sendControlChange(midiI + 1, map(item.velocity, 0, 1, 0, 127), 3);
+              currentMidiOutput.sendControlChange(midiI + 1, clamp(map(item.velocity, 0, 1, 0, 127), 0, 127), 3);
             }
 
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
             $el.querySelector(`.y`).innerText = y.toPrecision(2);
-            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(2);
+            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(2) * 10;
             $el.classList.toggle('highlight', item.highlighted)
           } else {
               $joints.innerHTML += `
@@ -290,16 +291,16 @@ async function draw() {
           if ($el) {
             
 
-            if (currentMidiOutput && !video.elt.playing) {
+            if (currentMidiOutput && !video.elt.paused) {
               currentMidiOutput.sendControlChange(midiI, map(x, -1, 1, 0, 127), 1);
               currentMidiOutput.sendControlChange(midiI, map(y, -1, 1, 0, 127), 2);
-              currentMidiOutput.sendControlChange(midiI + 1, clamp(map(item.velocity, 0, 1, 0, 127), 0, 127), 1);
+              currentMidiOutput.sendControlChange(midiI + 1, clamp(map(item.velocity * 100, 0, 1, 0, 127), 0, 127), 1);
               currentMidiOutput.sendControlChange(midiI + 1, map(distanceNow, 0, 1, 0, 127), 2);
             }
 
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
             $el.querySelector(`.y`).innerText = y.toPrecision(2);
-            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(2);
+            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(2) * 100;
             $el.querySelector(`.length`).innerText = distanceNow.toPrecision(2);
             $el.classList.toggle('highlight', item.highlighted)
           } else {
