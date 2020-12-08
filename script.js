@@ -104,7 +104,12 @@ async function setup() {
           highlight: false,
           type: 'relative', // or relative
           velocity: 0,
-          lastDistance: 0
+          lastDistance: 0,
+          mapping: {
+            x: [0, 1]
+            x: [0, 1]
+          x: [0, 1]
+          }
         })
       }
       
@@ -208,9 +213,9 @@ async function draw() {
 
             const changeX = clamp((keypoint.position.x - lastKeypoint.position.x) / video.width, 0, 1) 
             const changeY = clamp((keypoint.position.y - lastKeypoint.position.y) / video.height, 0, 1)
-            const change = Math.abs(changeX + changeY) * 10
+            const change = Math.abs(changeX + changeY) * 50
 
-            item.velocity = Math.max(lerp(item.velocity, change, 0.5), 0.001)
+            item.velocity = Math.max(lerp(item.velocity, change, 0.4), 0.001)
           }
           
           
@@ -227,7 +232,7 @@ async function draw() {
 
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
             $el.querySelector(`.y`).innerText = y.toPrecision(2);
-            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(2) * 10;
+            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(2) * 50;
             $el.classList.toggle('highlight', item.highlighted)
           } else {
               $joints.innerHTML += `
@@ -279,7 +284,7 @@ async function draw() {
             const change = distanceNow - item.lastDistance        
       
 
-            item.velocity = Math.max(lerp(item.velocity, change, 0.5), 0.001)
+            item.velocity = Math.max(lerp(item.velocity, change, 0.4), 0.001)
               
                 item.lastDistance = distanceNow
 
@@ -315,24 +320,33 @@ async function draw() {
 
                     <div>
                       <span class="sep">x: </span>
-                      <span class="x"></span> 
+                      <span class="x"></span>
                       <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
-
+                      <span>min: </span>
+                      <span>max: </span>
+  
+  
                       <br>
                       <span class="sep">y: </span>
                       <span class="y"></span>
                       <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
+                      <span>min: </span>
+                      <span>max: </span>
                       
                       <br>
                       <span class="sep">velocity: </span>
                       <span class="velocity"></span>
                       <button class="test" onclick="sendTest(${midiI + 1}, 1)">test</button>
+                      <span>min: </span>
+                      <span>max: </span>
                       
                       <br>
                       <span class="sep">length: </span>
                       <span class="length"></span>
                       <button class="test" onclick="sendTest(${midiI + 1}, 2)">test</button>
-                    </div>
+                      <span>min: </span>
+                      <span>max: </span>
+                   </div>
                  </div>
               `;
           }
