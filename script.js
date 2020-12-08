@@ -205,7 +205,7 @@ async function draw() {
 
             const changeX = clamp((keypoint.position.x - lastKeypoint.position.x) / video.width, 0, 1) 
             const changeY = clamp((keypoint.position.y - lastKeypoint.position.y) / video.height, 0, 1)
-            const change = changeX + changeY
+            const change = Math.abs(changeX + changeY)
 
             item.velocity = Math.max(lerp(item.velocity, change, 0.5), 0.001)
           }
@@ -218,6 +218,7 @@ async function draw() {
             if (currentMidiOutput) {
               currentMidiOutput.sendControlChange(i, map(x, 0, 1, 0, 127), 1);
               currentMidiOutput.sendControlChange(i, map(y, 0, 1, 0, 127), 2);
+              currentMidiOutput.sendControlChange(i, map(item.velocity, 0, 1, 0, 127), 3);
             }
 
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
@@ -262,30 +263,42 @@ async function draw() {
       if (poses[item.personA] && poses[item.personB]) {
           const keypointA = poses[item.personA].keypoints.find(kp => kp.part == item.partA)
           const keypointB = poses[item.personB].keypoints.find(kp => kp.part == item.partB)
+          const distanceNow = dist(keypointA.position.x, keypointA.position.y, keypointB.position.x, keypointB.position.y)
 
           
-          if (lastPoses[item.personA]) {
-            const lastKeypoint = lastPoses[item.person].keypoints.find(kp => kp.part == item.part)
+          if (lastPoses[item.personA] && lastPoses[item.personB]) {
+            const lastKeypointA = lastPoses[item.personA].keypoints.find(kp => kp.part == item.part)
+            const lastKeypointB = lastPoses[item.personB].keypoints.find(kp => kp.part == item.part)
 
-            const changeX = clamp((keypoint.position.x - lastKeypoint.position.x) / video.width, 0, 1) 
-            const changeY = clamp((keypoint.position.y - lastKeypoint.position.y) / video.height, 0, 1)
-            const change = changeX + changeY
+                          console.log(lastPoses[item.personA],  lastPoses[item.personB])
 
-            item.velocity = Math.max(lerp(item.velocity, change, 0.5), 0.001)
+            if (lastKeypointA && lastKeypointB) {
+              console.log(lastKeypointA, lastKeypointB)
+              const lastDistance = dist(lastKeypointA.position.x, lastKeypointA.position.y, lastKeypointB.position.x, lastKeypointB.position.y)
+              const change = Math.abs(distanceNow - lastDistance)
+
+              item.velocity = lerp(item.velocity, change, 0.5), 0.001)
+            }
+            
           }
           
           
           if ($el) {
             const x = clamp((keypointA.position.x - keypointB.position.x) / video.width, -1, 1);
             const y = clamp((keypointA.position.y - keypointB.position.y) / video.height, -1, 1);
+            const distanceNow = Math.sqrt(x * x + y * y)
 
             if (currentMidiOutput) {
               currentMidiOutput.sendControlChange(i, map(x, -1, 1, 0, 127), 1);
               currentMidiOutput.sendControlChange(i, map(y, -1, 1, 0, 127), 2);
+              currentMidiOutput.sendControlChange(i, map(item.velocity, 0, 1, 0, 127), 3);
+              currentMidiOutput.sendControlChange(i, map(distanceNow, 0, 1, 0, 127), 4);
             }
 
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
             $el.querySelector(`.y`).innerText = y.toPrecision(2);
+            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(2);
+            $el.querySelector(`.length`).innerText = distanceNow.toPrecision(2);
             $el.classList.toggle('highlight', item.highlighted)
           } else {
               let secondperson = item.personA == item.personB ? '' : `PERSON ${item.personB}<span class="sep">'s</span>` 
@@ -306,7 +319,17 @@ async function draw() {
                       <span class="sep">y: </span>
                       <span class="y"></span>
                       <button class="test" onclick="sendTest(${i}, 2)">test</button>
-                      </div>
+                      
+                      <br>
+                      <span class="sep">velocity: </span>
+                      <span class="velocity"></span>
+                      <button class="test" onclick="sendTest(${i}, 3)">test</button>
+                      
+                      <br>
+                      <span class="sep">length: </span>
+                      <span class="length"></span>
+                      <button class="test" onclick="sendTest(${i}, 4)">test</button>
+                    </div>
                  </div>
               `;
           }
