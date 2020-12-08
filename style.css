@@ -11,11 +11,6 @@ body {
   color: white;
 }
 
-video {
-    text-align: inherit;
-    width: 250px;
-    height: auto;
-}
 
 .playback-speed-container {
   display: flex;
@@ -27,6 +22,7 @@ canvas {
   width: 100% !important;
   height: unset !important;
   filter: grayscale(1);
+  max-width: 800px;
 }
 
 main {
@@ -92,6 +88,12 @@ main .inner {
   }
 }
 
+@media(min-width: 1200px) {
+  .joints {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
 button, select {
   background: none;
   color: #ffffff;
@@ -112,4 +114,8 @@ button:hover {
 progress {
   width: 100%;
   filter: grayscale(1) invert(1);
+}
+
+input[type="range"] {
+    filter: grayscale(1) invert(1) brightness(3);
 }

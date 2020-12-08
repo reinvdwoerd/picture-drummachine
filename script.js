@@ -4,7 +4,7 @@ let video, net, currentMidiOutput;
 const $ = selector => document.querySelector(selector);
 
 const $playbackSpeed = $(".playback-speed");
-const $playbackSpeedLabel = $(".playback-speed-label");
+const $playbackSpeedLabel = $(".playback-speed-label span");
 const $positionSlider = $(".position");
 const $cachingProgress = $("#caching");
 
@@ -35,7 +35,7 @@ async function setup() {
 
   // VIDEO
   const src =
-    "https://cdn.glitch.com/fce293e2-7c18-4790-a64f-62ef937bd855%2Fposepose.mp4?v=1606091227303";
+    "https://cdn.glitch.com/5a74bc96-f3cf-4cb9-bf88-92a1bb8ca483%2Ffighting_encoded.mp4?v=1607391101408";
   video = createVideo(src);
 
   video.volume(0);
@@ -70,8 +70,8 @@ async function draw() {
     // Video position
     poses = await net.estimateMultiplePoses(video.elt, {
       flipHorizontal: false,
-      maxDetections: 5,
-      scoreThreshold: 0.5,
+      maxDetections: 2,
+      scoreThreshold: 0.9,
       nmsRadius: 20
     });
   } catch (e) {
