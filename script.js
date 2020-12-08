@@ -1,5 +1,5 @@
 /* global strokeWeight, stroke, frameRate, posenet, createVideo, createCanvas, fill, ellipse, image, line, width, height, WebMidi, dist, mouseX, mouseY, map */
-let video, net, currentMidiOutput;
+let video, net, currentMidiOutput, font;
 
 const $ = selector => document.querySelector(selector);
 
@@ -30,6 +30,7 @@ let wasPaused = null;
 
 // Constants
 let jointRadius = 20;
+let textBoxPadding = 5;
 
 
 
@@ -50,10 +51,15 @@ function searchIfOnAKeypoint()  {
 
 
 async function setup() {
+  // canvas
   let canvas = createCanvas(1920, 1080);
   canvas.parent("main");
 
+  // font
+  font = loadFont('https://cdn.glitch.com/d781fd93-be94-46a0-a508-c751384d9f8a%2FCourier%20New%20Regular.ttf?v=1607412096016')
+  textFont(font)
   
+  // storage
   trackedItems = JSON.parse(localStorage.getItem('trackedItems')) || []
   
   canvas.mousePressed(() => {
@@ -402,12 +408,17 @@ function drawKeypoints() {
         ellipse(x, y, jointRadius + 10);
 
         fill("black");
-        stroke("white");
+        // stroke("white");
         
         if (mouseOver) {
           // if (trackedItem) {
           //     trackedItem.highlight = true;
           // } 
+          fill("black");
+          noStroke()
+          let bbox = font.textBounds(part, x, y, 30);
+          rect(bbox.x - textBoxPadding, bbox.y - textBoxPadding, bbox.w + textBoxPadding * 2, bbox.h + textBoxPadding * 2);
+          fill("white");
           text(part, x, y);  
         }
         
@@ -424,16 +435,27 @@ function drawKeypoints() {
   }
 }
 
-onscroll = () => {
-  const scrollRange = 300;
-  $("main").style.opacity = Math.max(
-    (scrollRange - scrollY) / scrollRange,
-    0.1
-  );
-};
+
+  
+  
+function deleteTrackedItem(i) {
+  trackedItems.splice(i, 1)
+  $(`.tracked-item:nth-child(${i + 1})`).remove()
+  localStorage.setItem('trackedItems', JSON.stringify(trackedItems))
+}
+
+
 
 // INPUT =======================================
 // =============================================
+// onscroll = () => {
+//   const scrollRange = 300;
+//   $("main").style.opacity = Math.max(
+//     (scrollRange - scrollY) / scrollRange,
+//     0.1
+//   );
+// };
+
 $playbackSpeed.oninput = () => {
   video.speed($playbackSpeed.value);
   $playbackSpeedLabel.innerText = $playbackSpeed.value;
