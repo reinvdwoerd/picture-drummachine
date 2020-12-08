@@ -55,6 +55,7 @@ main.half-transparent {
   padding-top: 0;
   z-index: 2;
   position: relative;
+  transition: opacity .1s;
 }
 
 
@@ -133,6 +134,8 @@ input.playback-speed {
 
 select.outputs {
     margin: 10px 0;
+    margin-left: auto;
+    display: flex;
 }
 
 code.info {
@@ -155,4 +158,8 @@ label.playback-speed-label {
 input.position {
     max-width: 100%;
     width: 100%;
+}
+
+body:not(:hover) .midi {
+  opacity: 0.5;
 }

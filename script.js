@@ -17,6 +17,7 @@ const $poseData = $(".pose-data");
 
 let poses = [];
 let draggingSlider = false
+let wasPaused = null
 
 async function setup() {
   let canvas = createCanvas(1920, 1080);
@@ -68,7 +69,6 @@ async function draw() {
   console.log(draggingSlider)
   
   if (draggingSlider) {
-    // return;
     image(video, 0, 0, width, height);
     return;
   } else {
@@ -225,6 +225,7 @@ $playbackSpeed.oninput = () => {
 };
 
 $positionSlider.oninput = () => {
+  wasPaused = video.elt.paused
   video.pause()
   video.time($positionSlider.value);
   draggingSlider = true
@@ -232,7 +233,7 @@ $positionSlider.oninput = () => {
 
 $positionSlider.onchange = () => {
   video.time($positionSlider.value);
-  video.elt.play()
+  if (!wasPaused) video.elt.play()
   draggingSlider = false
 };
 
