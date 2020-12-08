@@ -1,4 +1,4 @@
-/* global strokeWeight, stroke, frameRate, posenet, createVideo, createCanvas, fill, ellipse, image, line, width, height, WebMidi */
+/* global strokeWeight, stroke, frameRate, posenet, createVideo, createCanvas, fill, ellipse, image, line, width, height, WebMidi, dist, mouseX, mouseY */
 let video, net, currentMidiOutput;
 
 const $ = selector => document.querySelector(selector);
@@ -15,14 +15,19 @@ const $currentTime = $(".current-time span");
 const $currentFrame = $(".current-frame span");
 const $poseData = $(".pose-data");
 
-let lastPoses = []
-let poses = []
-let draggingSlider = false
-let wasPaused = null
 
+// Poses, mappings, data
+let lastPoses = [];
+let poses = [];
+let mappings = {}
+
+// Slider
+let draggingSlider = false;
+let wasPaused = null;
 
 // Constants
-let jointRadius = 20
+let jointRadius = 20;
+
 
 
 
@@ -30,11 +35,20 @@ async function setup() {
   let canvas = createCanvas(1920, 1080);
   canvas.parent("main");
 
-
   canvas.mousePressed(() => {
     // It's on a dot
-    
-    
+    for (let i = 0; i < poses.length; i++) {
+      const pose = poses[i];
+      for (const { position, part } of pose.keypoints) {
+        const { x, y } = position;
+
+        if (dist(x, y, mouseX, mouseY) < jointRadius) {
+          
+          return;
+        }
+      }
+    }
+
     // It's on the background
     if (video.elt.paused) {
       video.loop();
@@ -42,11 +56,11 @@ async function setup() {
       video.pause();
     }
   });
-  
-  
+
   // STYLE
   strokeWeight(5);
   stroke("white");
+  textSize(30);
 
   // VIDEO
   const src =
@@ -74,13 +88,17 @@ async function setup() {
 
 async function draw() {
   // THE UPDATING ---
-  const currentTime = draggingSlider ? Number($positionSlider.value) : video.elt.currentTime;
+  const currentTime = draggingSlider
+    ? Number($positionSlider.value)
+    : video.elt.currentTime;
   const currentFrame = Math.floor(currentTime * 29.97);
-  $currentTime.innerText = `${currentTime.toPrecision(3)} / ${video.elt.duration.toPrecision(3)}s`;
+  $currentTime.innerText = `${currentTime.toPrecision(
+    3
+  )} / ${video.elt.duration.toPrecision(3)}s`;
   $currentFrame.innerText = currentFrame;
-  
+
   // console.log(draggingSlider)
-  
+
   if (draggingSlider) {
     image(video, 0, 0, width, height);
     return;
@@ -88,13 +106,11 @@ async function draw() {
     $positionSlider.value = currentTime;
     $positionSlider.setAttribute("max", video.elt.duration);
   }
-  
-
 
   try {
     // Video position
-    if (!net || video.elt.readyState != 4) return
-    
+    if (!net || video.elt.readyState != 4) return;
+
     poses = await net.estimateMultiplePoses(video.elt, {
       flipHorizontal: false,
       maxDetections: 2,
@@ -105,12 +121,12 @@ async function draw() {
     console.log(e);
     return;
   }
-  
-  
+
   // ORDER POSES BY NOSE POSITION =======================
   // This maintains the left/right poses ================
-  poses = poses.sort((a, b) => a.keypoints[0].position.x - b.keypoints[0].position.x)
-  
+  poses = poses.sort(
+    (a, b) => a.keypoints[0].position.x - b.keypoints[0].position.x
+  );
 
   // KEYPOINTS =======================================
   // =================================================
@@ -120,22 +136,22 @@ async function draw() {
     const $pose = $(`.pose[data-pose="${poseI}"]`);
 
     if ($pose) {
-      let leftWristPosition 
-      let leftShoulderPosition 
-      
+      let leftWristPosition;
+      let leftShoulderPosition;
+
       for (let i = 0; i < pose.keypoints.length; i++) {
         // A keypoint is an object describing a body part (like rightArm or leftShoulder)
         const keypoint = pose.keypoints[i];
         const { part, position } = keypoint;
 
         const midiI = poseI * 17 + i;
-        
+
         if (part == "leftShoulder") {
-          leftShoulderPosition = position
+          leftShoulderPosition = position;
         }
-        
+
         if (part == "leftWrist") {
-          leftWristPosition = position
+          leftWristPosition = position;
         }
 
         // Normalize values ----
@@ -149,51 +165,51 @@ async function draw() {
         }
 
         // UI UPDATING -----
-//         const $joint = $pose.querySelector(
-//           `.joint[data-part="${part}"]`
-//         );
+        //         const $joint = $pose.querySelector(
+        //           `.joint[data-part="${part}"]`
+        //         );
 
-//         if ($joint) {
-//           // Update display
-//           $joint.querySelector(`.x`).innerText = $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
-//           $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
-//         } else {
-//           $pose.innerHTML += `
-//                   <div class="joint" data-part="${part}" data-pose="${poseI}">
-//                     <div class="name">
-//                       <span class="index">${midiI}</span>
-//                       <span class="part">${part}</span>
-//                     </div>
+        //         if ($joint) {
+        //           // Update display
+        //           $joint.querySelector(`.x`).innerText = $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
+        //           $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
+        //         } else {
+        //           $pose.innerHTML += `
+        //                   <div class="joint" data-part="${part}" data-pose="${poseI}">
+        //                     <div class="name">
+        //                       <span class="index">${midiI}</span>
+        //                       <span class="part">${part}</span>
+        //                     </div>
 
-//                     <div class="grid">
-//                       <span class="label">x:</span>
-//                       <span class="x"></span>
-//                       <progress class="progress-x" min="0" max="1" value="0"></progress>
-//                       <button onclick="sendTest(${midiI}, 1)">test</button>
-//                     </div>
+        //                     <div class="grid">
+        //                       <span class="label">x:</span>
+        //                       <span class="x"></span>
+        //                       <progress class="progress-x" min="0" max="1" value="0"></progress>
+        //                       <button onclick="sendTest(${midiI}, 1)">test</button>
+        //                     </div>
 
-//                     <div class="grid">
-//                       <span class="label">y:</span>
-//                       <span class="y"></span>
-//                       <progress class="progress-y" min="0" max="1" value="0"></progress>
-//                       <button onclick="sendTest(${midiI}, 2)">test</button>
-//                     </div>
-//                  </div>
-//               `;
-//         }
+        //                     <div class="grid">
+        //                       <span class="label">y:</span>
+        //                       <span class="y"></span>
+        //                       <progress class="progress-y" min="0" max="1" value="0"></progress>
+        //                       <button onclick="sendTest(${midiI}, 2)">test</button>
+        //                     </div>
+        //                  </div>
+        //               `;
+        //         }
       }
-      
+
       // Update the additional joints ---- FIXME!!!
-//       const $joint = $pose.querySelector(`.joint[data-part="leftwrist-to-leftshoulder"]`);
-//       const x = clamp((leftWristPosition.x - leftShoulderPosition.x) / video.width, -1, 1);
-//       const y = clamp((leftWristPosition.y - leftShoulderPosition.y) / video.height, -1, 1);
-//       $joint.querySelector(`.x`).innerText = x.toPrecision(2);
-//       $joint.querySelector(`.y`).innerText = y.toPrecision(2);
-      
-//       if (currentMidiOutput && !video.elt.paused) {
-//         currentMidiOutput.sendControlChange(poseI * 17 + 17, map(x, -1, 1, 0, 127), 1);
-//         currentMidiOutput.sendControlChange(poseI * 17 + 17, map(y, -1, 1, 0, 127), 2);
-//       }
+      //       const $joint = $pose.querySelector(`.joint[data-part="leftwrist-to-leftshoulder"]`);
+      //       const x = clamp((leftWristPosition.x - leftShoulderPosition.x) / video.width, -1, 1);
+      //       const y = clamp((leftWristPosition.y - leftShoulderPosition.y) / video.height, -1, 1);
+      //       $joint.querySelector(`.x`).innerText = x.toPrecision(2);
+      //       $joint.querySelector(`.y`).innerText = y.toPrecision(2);
+
+      //       if (currentMidiOutput && !video.elt.paused) {
+      //         currentMidiOutput.sendControlChange(poseI * 17 + 17, map(x, -1, 1, 0, 127), 1);
+      //         currentMidiOutput.sendControlChange(poseI * 17 + 17, map(y, -1, 1, 0, 127), 2);
+      //       }
     } else {
       $joints.innerHTML += `
           <div class="pose" data-pose="${poseI}" style="order: 17">
@@ -234,29 +250,35 @@ function drawSkeleton() {
 
 // A function to draw ellipses over the detected keypoints
 function drawKeypoints() {
-  for (const pose of poses) {
-    for (const {position} of pose.keypoints) {
-      const {x, y} = position
-      
+  for (let i = 0; i < poses.length; i++) {
+    const pose = poses[i];
+    for (const { position, part } of pose.keypoints) {
+      const { x, y } = position;
+
       if (dist(x, y, mouseX, mouseY) < jointRadius) {
         fill("#00ffff");
         stroke("white");
-        ellipse(position.x, position.y, jointRadius + 10);
+        ellipse(x, y, jointRadius + 10);
+
+        fill("black");
+        stroke("white");
+        text(part, x, y);
       } else {
         fill("white");
         stroke("black");
-        ellipse(position.x, position.y, jointRadius);
+        ellipse(x, y, jointRadius);
       }
-      
     }
   }
 }
 
 onscroll = () => {
-  const scrollRange = 300
-  $('main').style.opacity = Math.max((scrollRange - scrollY) / scrollRange, 0.1)
-}
-
+  const scrollRange = 300;
+  $("main").style.opacity = Math.max(
+    (scrollRange - scrollY) / scrollRange,
+    0.1
+  );
+};
 
 // INPUT =======================================
 // =============================================
@@ -265,28 +287,26 @@ $playbackSpeed.oninput = () => {
   $playbackSpeedLabel.innerText = $playbackSpeed.value;
 };
 
-
 $positionSlider.onmousedown = () => {
-  wasPaused = video.elt.paused
-}
+  wasPaused = video.elt.paused;
+};
 
 $positionSlider.oninput = () => {
-  video.pause()
+  video.pause();
   video.time($positionSlider.value);
-  draggingSlider = true
+  draggingSlider = true;
 };
 
 $positionSlider.onchange = () => {
   video.time($positionSlider.value);
-  if (!wasPaused) video.elt.play()
-  draggingSlider = false
+  if (!wasPaused) video.elt.play();
+  draggingSlider = false;
 };
 
 $midiOutputSelect.onchange = () => {
   currentMidiOutput = WebMidi.getOutputByName($midiOutputSelect.value);
   console.log("changed output to: ", currentMidiOutput.name);
 };
-
 
 function togglePlaying() {
   if (video.elt.paused) {
@@ -295,7 +315,6 @@ function togglePlaying() {
     video.pause();
   }
 }
-
 
 // MIDI ========================================
 // =============================================
@@ -316,14 +335,11 @@ WebMidi.enable(err => {
   currentMidiOutput = WebMidi.outputs[0];
 });
 
-
-
 // UTILITIES =======================================
 // =================================================
 function clamp(num, min, max) {
   return num <= min ? min : num >= max ? max : num;
 }
-
 
 // DRAG AND DROP ===================================
 // =================================================
