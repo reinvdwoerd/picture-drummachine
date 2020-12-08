@@ -16,6 +16,7 @@ const $currentFrame = $(".current-frame span");
 const $poseData = $(".pose-data");
 
 let poses = [];
+let draggingSlider = false
 
 async function setup() {
   let canvas = createCanvas(1920, 1080);
@@ -44,8 +45,6 @@ async function setup() {
   video.showControls();
   video.hide();
 
-  $positionSlider.setAttribute("max", video.elt.duration);
-
   net = await posenet.load({
     // architecture: 'ResNet50',
     inputResolution: { width: 640, height: 480 },
@@ -63,9 +62,17 @@ async function draw() {
   // THE UPDATING ---
   const currentTime = video.elt.currentTime;
   const currentFrame = Math.floor(currentTime * 29.97);
-  $currentTime.innerText = `${currentTime.toPrecision(3)}s`;
+  $currentTime.innerText = `${currentTime.toPrecision(3)} / ${video.elt.duration.toPrecision(3)}s`;
   $currentFrame.innerText = currentFrame;
+  
+  console.log(draggingSlider)
+  
+  if (draggingSlider) {
+    return;
+  }
+  
   $positionSlider.value = currentTime;
+  $positionSlider.setAttribute("max", video.elt.duration);
 
   try {
     // Video position
@@ -214,7 +221,12 @@ $playbackSpeed.oninput = () => {
 };
 
 $positionSlider.oninput = () => {
-  video.elt.currentTime = video.elt.duration * $positionSlider.value;
+  draggingSlider = true
+};
+
+$positionSlider.onchange = () => {
+  video.etime() = video.elt.duration * $positionSlider.value;
+  draggingSlider = false
 };
 
 $midiOutputSelect.onchange = () => {
