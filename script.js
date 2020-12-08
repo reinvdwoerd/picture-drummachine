@@ -60,7 +60,7 @@ async function setup() {
 
 async function draw() {
   // THE UPDATING ---
-  const currentTime = video.elt.currentTime;
+  const currentTime = draggingSlider ? Number($positionSlider.value) : video.elt.currentTime;
   const currentFrame = Math.floor(currentTime * 29.97);
   $currentTime.innerText = `${currentTime.toPrecision(3)} / ${video.elt.duration.toPrecision(3)}s`;
   $currentFrame.innerText = currentFrame;
@@ -68,15 +68,19 @@ async function draw() {
   console.log(draggingSlider)
   
   if (draggingSlider) {
+    // return;
+    image(video, 0, 0, width, height);
     return;
+  } else {
+    $positionSlider.value = currentTime;
+    $positionSlider.setAttribute("max", video.elt.duration);
   }
   
-  $positionSlider.value = currentTime;
-  $positionSlider.setAttribute("max", video.elt.duration);
+
 
   try {
     // Video position
-    if (!net) return
+    if (!net || video.elt.readyState != 4) return
     
     poses = await net.estimateMultiplePoses(video.elt, {
       flipHorizontal: false,
@@ -221,11 +225,14 @@ $playbackSpeed.oninput = () => {
 };
 
 $positionSlider.oninput = () => {
+  video.pause()
+  video.time($positionSlider.value);
   draggingSlider = true
 };
 
 $positionSlider.onchange = () => {
-  video.etime() = video.elt.duration * $positionSlider.value;
+  video.time($positionSlider.value);
+  video.elt.play()
   draggingSlider = false
 };
 
