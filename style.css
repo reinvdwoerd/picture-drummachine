@@ -6,14 +6,18 @@ body {
   /* display: grid; */
   /* grid-template-columns: 1fr; */
   height: 100vh;
+  position: absolute;
   margin: 0;
   background: #101010;
   color: white;
+  width: 100%;
+  top: 0;
 }
 
 
 .playback-speed-container {
   display: flex;
+  margin-bottom: 10px;
   flex-direction: column;
 }
 
@@ -30,6 +34,11 @@ main {
   top: 0;
   position: fixed;
   flex-direction: column;
+  transition: opacity 0.5s;
+}
+
+main.half-transparent {
+  opacity: 0.3;
 }
 
 main .inner {
@@ -51,9 +60,8 @@ main .inner {
 
 .midi {
   padding: 25px;
-  /* overflow-y: scroll; */
   padding-bottom: 100px;
-  margin-top: 60vh;
+  padding-top: 58vw;
   z-index: 2;
   position: relative;
 }
@@ -85,14 +93,14 @@ main .inner {
 }
 
 
-@media(min-width: 800px) {
+@media(min-width: 600px) {
   .joints {
     grid-template-columns: 1fr 1fr;
     grid-gap: 30px 30px;
   }
 }
 
-@media(min-width: 1200px) {
+@media(min-width: 1000px) {
   .pose {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -119,9 +127,17 @@ button:hover {
 
 progress {
   width: 100%;
-  filter: grayscale(1) invert(1);
+  filter: grayscale(1) invert(1) brightness(1.1);
 }
 
 input[type="range"] {
     filter: grayscale(1) invert(1) brightness(3);
+}
+
+select.outputs {
+    margin: 10px 0;
+}
+
+code.info {
+    margin: 10px 0;
 }

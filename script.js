@@ -69,6 +69,8 @@ async function draw() {
 
   try {
     // Video position
+    if (!net) return
+    
     poses = await net.estimateMultiplePoses(video.elt, {
       flipHorizontal: false,
       maxDetections: 2,
@@ -200,6 +202,10 @@ function drawKeypoints() {
       ellipse(keypoint.position.x, keypoint.position.y, 20, 20);
     }
   }
+}
+
+onscroll = () => {
+  $('main').classList.toggle('half-transparent', scrollY > 300)
 }
 
 $playbackSpeed.oninput = () => {
