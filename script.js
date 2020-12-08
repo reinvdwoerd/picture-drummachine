@@ -24,13 +24,6 @@ async function setup() {
   let canvas = createCanvas(1920, 1080);
   canvas.parent("main");
 
-  canvas.mousePressed(() => {
-    if (video.elt.paused) {
-      video.loop();
-    } else {
-      video.pause();
-    }
-  });
 
   // STYLE
   strokeWeight(5);
@@ -67,7 +60,7 @@ async function draw() {
   $currentTime.innerText = `${currentTime.toPrecision(3)} / ${video.elt.duration.toPrecision(3)}s`;
   $currentFrame.innerText = currentFrame;
   
-  console.log(draggingSlider)
+  // console.log(draggingSlider)
   
   if (draggingSlider) {
     image(video, 0, 0, width, height);
@@ -137,66 +130,74 @@ async function draw() {
         }
 
         // UI UPDATING -----
-        const $joint = $pose.querySelector(
-          `.joint[data-part="${part}"]`
-        );
+//         const $joint = $pose.querySelector(
+//           `.joint[data-part="${part}"]`
+//         );
 
-        if ($joint) {
-          // Update display
-          $joint.querySelector(`.x`).innerText = $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
-          $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
-        } else {
-          $pose.innerHTML += `
-                  <div class="joint" data-part="${part}" data-pose="${poseI}">
-                    <div class="name">
-                      <span class="index">${midiI}</span>
-                      <span class="part">${part}</span>
-                    </div>
+//         if ($joint) {
+//           // Update display
+//           $joint.querySelector(`.x`).innerText = $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
+//           $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
+//         } else {
+//           $pose.innerHTML += `
+//                   <div class="joint" data-part="${part}" data-pose="${poseI}">
+//                     <div class="name">
+//                       <span class="index">${midiI}</span>
+//                       <span class="part">${part}</span>
+//                     </div>
 
-                    <div class="grid">
-                      <span class="label">x:</span>
-                      <span class="x"></span>
-                      <progress class="progress-x" min="0" max="1" value="0"></progress>
-                      <button onclick="sendTest(${midiI}, 1)">test</button>
-                    </div>
+//                     <div class="grid">
+//                       <span class="label">x:</span>
+//                       <span class="x"></span>
+//                       <progress class="progress-x" min="0" max="1" value="0"></progress>
+//                       <button onclick="sendTest(${midiI}, 1)">test</button>
+//                     </div>
 
-                    <div class="grid">
-                      <span class="label">y:</span>
-                      <span class="y"></span>
-                      <progress class="progress-y" min="0" max="1" value="0"></progress>
-                      <button onclick="sendTest(${midiI}, 2)">test</button>
-                    </div>
-                 </div>
-              `;
-        }
+//                     <div class="grid">
+//                       <span class="label">y:</span>
+//                       <span class="y"></span>
+//                       <progress class="progress-y" min="0" max="1" value="0"></progress>
+//                       <button onclick="sendTest(${midiI}, 2)">test</button>
+//                     </div>
+//                  </div>
+//               `;
+//         }
       }
       
-      // Update the additional joints
-      const $joint = $pose.querySelector(`.joint[data-part="leftwrist-to-leftshoulder"]`);
-      const x = clamp((leftWristPosition.x - leftShoulderPosition.x) / video.width, -1, 1);
-      const y = clamp((leftWristPosition.y - leftShoulderPosition.y) / video.height, -1, 1);
-      $joint.querySelector(`.x`).innerText = $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
-      $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
+      // Update the additional joints ---- FIXME!!!
+//       const $joint = $pose.querySelector(`.joint[data-part="leftwrist-to-leftshoulder"]`);
+//       const x = clamp((leftWristPosition.x - leftShoulderPosition.x) / video.width, -1, 1);
+//       const y = clamp((leftWristPosition.y - leftShoulderPosition.y) / video.height, -1, 1);
+//       $joint.querySelector(`.x`).innerText = x.toPrecision(2);
+//       $joint.querySelector(`.y`).innerText = y.toPrecision(2);
+      
+//       if (currentMidiOutput && !video.elt.paused) {
+//         currentMidiOutput.sendControlChange(poseI * 17 + 17, map(x, -1, 1, 0, 127), 1);
+//         currentMidiOutput.sendControlChange(poseI * 17 + 17, map(y, -1, 1, 0, 127), 2);
+//       }
     } else {
       $joints.innerHTML += `
-          <div class="pose" data-pose="${poseI}">
+          <div class="pose" data-pose="${poseI}" style="order: 17">
             <div class="name">
               PERSON ${poseI}
             </div>
             <div class="joint" data-part="leftwrist-to-leftshoulder" data-pose="${poseI}">
-              <div class="name">LEFTWRIST TO LEFTSHOULDER</div>
+              <div class="name">
+                <span class="index">17</span>
+                <span class="part">LEFTWRIST TO -SHOULDER</span>
+              </div>
 
               <div class="grid">
                 <span class="label">x:</span>
                 <span class="x"></span>
-                <input type="range" class="progress-x" min="-1" max="1" value="0"></input>
+                <div></div>
                 <button onclick="sendTest(${poseI * 17 + 17}, 1)">test</button>
               </div>
 
               <div class="grid">
                 <span class="label">y:</span>
                 <span class="y"></span>
-                <input type="range"  class="progress-y" min="-1" max="1" value="0"></input>
+                <div></div>
                 <button onclick="sendTest(${poseI * 17 + 17}, 2)">test</button>
               </div>
            </div>
@@ -277,6 +278,15 @@ $midiOutputSelect.onchange = () => {
   currentMidiOutput = WebMidi.getOutputByName($midiOutputSelect.value);
   console.log("changed output to: ", currentMidiOutput.name);
 };
+
+
+function togglePlaying() {
+  if (video.elt.paused) {
+    video.loop();
+  } else {
+    video.pause();
+  }
+}
 
 
 // MIDI ========================================
