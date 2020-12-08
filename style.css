@@ -104,7 +104,10 @@ main.half-transparent {
   }
 
 
-@media(min-width: 1700px) {
+
+
+
+@media(min-width: 1200px) {
   body {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -157,9 +160,10 @@ input.playback-speed {
 }
 
 select.outputs {
-    margin: 10px 0;
+    /* margin: 15px 0; */
     /* margin-left: auto; */
     display: flex;
+    /* margin-bottom: 15px; */
 }
 
 code.info {
@@ -171,7 +175,8 @@ header {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-gap: 25px;
-  margin-top: 10px;
+  /* margin-top: 10px; */
+  margin-bottom: 20px;
 }
 
 label.playback-speed-label {
@@ -219,4 +224,16 @@ button.play-pause {
 
 .joint > .rel-x, .rel-y, .abs-x, .abs-y {
     text-align: end;
+}
+
+.tracked-item .delete {
+  opacity: 0.1;
+}
+
+.tracked-item:hover .delete {
+  opacity: .6;
+}
+
+.tracked-item:hover .delete:hover {
+  opacity: 1;
 }

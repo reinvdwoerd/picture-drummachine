@@ -192,12 +192,17 @@ async function draw() {
       
       if (poses[item.person]) {
           const keypoint = poses[item.person].keypoints.find(kp => kp.part == item.part)
-          const lastKeypoint = lastPoses[item.person].keypoints.find(kp => kp.part == item.part)
           
-          const changeX = clamp((keypoint.position.x - lastKeypoint.position.x) / video.width, 0, 1) 
-          const changeY = clamp((keypoint.position.y - lastKeypoint.position.y) / video.height, 0, 1)
-          const change = changeX + changeY
-          const item.velocity = lerp(item.velocity)
+          if (lastPoses[item.person]) {
+            const lastKeypoint = lastPoses[item.person].keypoints.find(kp => kp.part == item.part)
+
+            const changeX = clamp((keypoint.position.x - lastKeypoint.position.x) / video.width, 0, 1) 
+            const changeY = clamp((keypoint.position.y - lastKeypoint.position.y) / video.height, 0, 1)
+            const change = changeX + changeY
+
+            item.velocity = Math.max(lerp(item.velocity, change, 0.5), 0.001)
+          }
+          
           
           if ($el) {
             const x = clamp(keypoint.position.x / video.width, 0, 1);
@@ -210,7 +215,7 @@ async function draw() {
 
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
             $el.querySelector(`.y`).innerText = y.toPrecision(2);
-            $el.querySelector(`.y`).innerText = y.toPrecision(2);
+            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(2);
             $el.classList.toggle('highlight', item.highlighted)
           } else {
               $joints.innerHTML += `
@@ -218,6 +223,7 @@ async function draw() {
                     <div>
                       <span class="index">${i}</span>
                       <span class="name">PERSON ${item.person} <span class="sep">-</span> ${item.part}</span>
+                      <button class="delete" onclick="deleteTrackedItem(${i})">x</button>
                     </div>
 
                     <div>
@@ -269,6 +275,7 @@ async function draw() {
                     <div>
                       <span class="index">${i}</span>
                       <span class="name">PERSON ${item.personA} <span class="sep">-</span> ${item.partA} <span class="sep">to</span> ${secondperson} ${item.partB}</span>
+                      <button class="delete" onclick="deleteTrackedItem(${i})">x</button>
                     </div>
 
                     <div>
@@ -291,8 +298,7 @@ async function draw() {
     
   }
 
-  
-  
+
   
   
 //   for (let poseI = 0; poseI < poses.length; poseI++) {
