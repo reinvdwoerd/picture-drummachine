@@ -47,7 +47,9 @@ main.half-transparent {
 .pose > .name {
     font-weight: bold;
     margin-top: 20px;
-    grid-column: 1 / span 2;
+    display: grid;
+    /* grid-column: 1 / span 3 !important; */
+    grid-template-columns: 260px  repeat(4, 1fr);
 }
 
 .midi {
@@ -73,6 +75,8 @@ main.half-transparent {
   padding-top: 5px;
   grid-column: 1;
   border-top: 1px solid #ffffff3d;
+  display: grid;
+  grid-template-columns: 30px 100px 30px 100px;
 }
 
 .joint .name {
@@ -93,25 +97,16 @@ main.half-transparent {
 }
 
 
-@media(min-width: 600px) {
   .joints {
     /* grid-template-columns: 1fr 1fr; */
     grid-gap: 30px 30px;
   }
-}
 
-@media(min-width: 1000px) {
-  .pose {
-    display: grid;
-    grid-template-columns: 1fr !important;
-    /* grid-gap: 0 20px; */
-  }
-}
 
 @media(min-width: 1700px) {
   body {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 2fr 1.2fr;
     margin-top: 50px;
   }
 
@@ -207,4 +202,12 @@ button.play-pause {
 
 .playback-controls {
   order: 2;
+}
+
+.sep, .index {
+  opacity: 0.5;
+}
+
+.pose > .name > span:not(:first-child) {
+    text-align: end;
 }

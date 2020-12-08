@@ -150,9 +150,9 @@ async function draw() {
                     <span class="index">${midiI}</span>
 
                     <span class="part-a">${partA.part}</span>
-                    <span class="part">-</span>
+                    <span class="sep">-</span>
                     <span class="part-b">${partB.part}</span>
-
+       
                  </div>
               `;
           }
@@ -161,8 +161,15 @@ async function draw() {
       $joints.innerHTML += `
           <div class="pose" data-pose="${poseI}" style="order: 17">
             <div class="name">
-              PERSON ${poseI}
+              <span>PERSON ${poseI}</span>
+              
+              <span class="rel-x">rel. x</span>
+              <span class="rel-y">rel. y</span>
+              <span class="abs-x">abs. x</span>
+              <span class="abs-y">abs. y</span>
             </div>
+                         
+            
           </div>
       `;
     }
