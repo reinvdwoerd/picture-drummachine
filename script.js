@@ -180,16 +180,17 @@ async function draw() {
     if (item.type == 'relative') {
       let $el = $(`.tracked-item[data-part="${item.partA}-${item.partB}"]`);
       
-      if (poses[item.person]) {
-          const keypoint = poses[item.person].keypoints.find(kp => kp.part == item.part)
+      if (poses[item.personA] && poses[item.personB]) {
+          const keypointA = poses[item.personA].keypoints.find(kp => kp.part == item.partA)
+          const keypointB = poses[item.personB].keypoints.find(kp => kp.part == item.partB)
 
           if ($el) {
-            const x = clamp(keypoint.position.x / video.width, -1, 1);
-            const y = clamp(keypoint.position.y / video.height, -1, 1);
+            const x = clamp((keypointA.position.x - keypointB.position.x) / video.width, -1, 1);
+            const y = clamp((keypointA.position.y - keypointB.position.y) / video.height, -1, 1);
 
             if (currentMidiOutput && !video.elt.paused) {
-              currentMidiOutput.sendControlChange(i, map(x, 0, 1, 0, 127), 1);
-              currentMidiOutput.sendControlChange(i, map(y, 0, 1, 0, 127), 2);
+              currentMidiOutput.sendControlChange(i, map(x, -1, 1, 0, 127), 1);
+              currentMidiOutput.sendControlChange(i, map(y, -1, 1, 0, 127), 2);
             }
 
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
@@ -197,10 +198,10 @@ async function draw() {
             $el.classList.toggle('highlight', item.highlighted)
           } else {
               $joints.innerHTML += `
-                  <div class="tracked-item relative" data-part="${item.part}" data-person="${item.person}">
+                  <div class="tracked-item relative" data-part="${item.partA}-${item.partB}" data-person="${item.personA}-${item.personB}">
                     <div>
                       <span class="index">${i}</span>
-                      <span class="name">PERSON ${item.person} <span class="sep">-</span> ${item.part}</span>
+                      <span class="name">PERSON ${item.personA} <span class="sep">-</span> ${item.partA} <span class="sep">—</span> PERSON ${item.personB} <span class="sep">-</span> ${item.partB}</span>
                     </div>
 
                     <div>
@@ -226,8 +227,8 @@ async function draw() {
           const keypoint = poses[item.person].keypoints.find(kp => kp.part == item.part)
 
           if ($el) {
-            const x = clamp(keypoint.position.x / video.width, -1, 1);
-            const y = clamp(keypoint.position.y / video.height, -1, 1);
+            const x = clamp(keypoint.position.x / video.width, 0, 1);
+            const y = clamp(keypoint.position.y / video.height, 0, 1);
 
             if (currentMidiOutput && !video.elt.paused) {
               currentMidiOutput.sendControlChange(i, map(x, 0, 1, 0, 127), 1);
@@ -319,6 +320,15 @@ async function draw() {
   if (draggingFromKeypoint) {
     stroke("#00ffff");
     line(draggingFromKeypoint.position.x, draggingFromKeypoint.position.y, mouseX, mouseY);
+  }
+  
+  for (const item of trackedItems) {
+    if (item.type == 'relative') {
+        const keypointA = poses[item.personA].keypoints.find(kp => kp.part == item.partA)
+        const keypointB = poses[item.personB].keypoints.find(kp => kp.part == item.partB)
+        stroke("#00ffff");
+        line(keypointA.position.x, keypointA.position.y, keypointB.position.x, keypointB.position.y);
+    }
   }
 }
 
