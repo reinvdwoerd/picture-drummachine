@@ -138,31 +138,21 @@ async function draw() {
     if ($pose) {
         let skeleton = posenet.getAdjacentKeyPoints(pose.keypoints);
         skeleton.forEach(([partA, partB], i) => {
-          let $el = $pose.querySelector(`.joint[data-part-a="${partA.part}"][[data-part-b="${partB.part}"]]`);
+          const midiI = poseI * 12 + i;
+
+          let $el = $pose.querySelector(`.joint[data-part="${partA.part}-${partB.part}"]`);
           
           if ($el) {
             
           } else {
               $pose.innerHTML += `
-                  <div class="joint" data-part="${part}" data-pose="${poseI}">
-                    <div class="name">
-                      <span class="index">${midiI}</span>
-                      <span class="part">${part}</span>
-                    </div>
+                  <div class="joint" data-part="${partA.part}-${partB.part}" data-pose="${poseI}">
+                    <span class="index">${midiI}</span>
 
-                    <div class="grid">
-                      <span class="label">x:</span>
-                      <span class="x"></span>
-                      <progress class="progress-x" min="0" max="1" value="0"></progress>
-                      <button onclick="sendTest(${midiI}, 1)">test</button>
-                    </div>
+                    <span class="part-a">${partA.part}</span>
+                    <span class="part">-</span>
+                    <span class="part-b">${partB.part}</span>
 
-                    <div class="grid">
-                      <span class="label">y:</span>
-                      <span class="y"></span>
-                      <progress class="progress-y" min="0" max="1" value="0"></progress>
-                      <button onclick="sendTest(${midiI}, 2)">test</button>
-                    </div>
                  </div>
               `;
           }
