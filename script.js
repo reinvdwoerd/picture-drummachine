@@ -11,8 +11,8 @@ const $cachingProgress = $("#caching");
 const $midiOutputSelect = $(".midi select.outputs");
 const $joints = $(".midi .joints");
 
-const $currentTime = $(".current-time");
-const $currentFrame = $(".current-frame");
+const $currentTime = $(".current-time span");
+const $currentFrame = $(".current-frame span");
 const $poseData = $(".pose-data");
 
 let poses = [];
@@ -72,7 +72,7 @@ async function draw() {
     poses = await net.estimateMultiplePoses(video.elt, {
       flipHorizontal: false,
       maxDetections: 2,
-      scoreThreshold: 0.9,
+      scoreThreshold: 0.75,
       nmsRadius: 20
     });
   } catch (e) {
@@ -81,9 +81,9 @@ async function draw() {
   }
   
   
-  // ORDER POSES BY LEFT/RIGHT =======================
-  // =================================================
-  poses = poses.sort(pose => pose.keypoints[0].position.x)
+  // ORDER POSES BY NOSE POSITION =======================
+  // This maintains the left/right poses ================
+  poses = poses.sort((a, b) => a.keypoints[0].position.x - b.keypoints[0].position.x)
   
 
   // KEYPOINTS =======================================

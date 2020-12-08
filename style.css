@@ -3,8 +3,8 @@
 }
 
 body {
-  display: grid;
-  grid-template-columns: 1fr;
+  /* display: grid; */
+  /* grid-template-columns: 1fr; */
   height: 100vh;
   margin: 0;
   background: #101010;
@@ -22,11 +22,13 @@ canvas {
   width: 100% !important;
   height: unset !important;
   filter: grayscale(1);
-  max-width: 800px;
+  /* max-width: 800px; */
 }
 
 main {
   display: flex;
+  top: 0;
+  position: fixed;
   flex-direction: column;
 }
 
@@ -49,11 +51,11 @@ main .inner {
 
 .midi {
   padding: 25px;
-}
-
-.midi {
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
   padding-bottom: 100px;
+  margin-top: 60vh;
+  z-index: 2;
+  position: relative;
 }
 
 
