@@ -108,12 +108,23 @@ async function draw() {
     const $pose = $(`.pose[data-pose="${poseI}"]`);
 
     if ($pose) {
+      let leftWristPosition 
+      let leftShoulderPosition 
+      
       for (let i = 0; i < pose.keypoints.length; i++) {
         // A keypoint is an object describing a body part (like rightArm or leftShoulder)
         const keypoint = pose.keypoints[i];
         const { part, position } = keypoint;
 
         const midiI = poseI * 17 + i;
+        
+        if (part == "leftShoulder") {
+          leftShoulderPosition = position
+        }
+        
+        if (part == "leftWrist") {
+          leftWristPosition = position
+        }
 
         // Normalize values ----
         const x = clamp(position.x / video.width, 0, 1);
@@ -125,18 +136,9 @@ async function draw() {
           currentMidiOutput.sendControlChange(midiI, y * 127, 2);
         }
 
-        // DRAWING ----
-        // Draw ellipses over the detected keypoints
-        // Only draw an ellipse is the pose probability is bigger than 0.2
-        if (keypoint.score > 0.2) {
-          stroke("black");
-          fill("white");
-          ellipse(keypoint.position.x, keypoint.position.y, 20, 20);
-        }
-
         // UI UPDATING -----
         const $joint = $pose.querySelector(
-          `.joint[data-part="${keypoint.part}"]`
+          `.joint[data-part="${part}"]`
         );
 
         if ($joint) {
@@ -145,10 +147,10 @@ async function draw() {
           $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
         } else {
           $pose.innerHTML += `
-                  <div class="joint" data-part="${keypoint.part}" data-pose="${poseI}">
+                  <div class="joint" data-part="${part}" data-pose="${poseI}">
                     <div class="name">
                       <span class="index">${midiI}</span>
-                      <span class="part">${keypoint.part}</span>
+                      <span class="part">${part}</span>
                     </div>
 
                     <div class="grid">
@@ -171,10 +173,10 @@ async function draw() {
       
       // Update the additional joints
       const $joint = $pose.querySelector(`.joint[data-part="leftwrist-to-leftshoulder"]`);
-      // const x = 
-      // const y = 
-      // $joint.querySelector(`.x`).innerText = $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
-      // $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
+      const x = clamp((leftWristPosition.x - leftShoulderPosition.x) / video.width, -1, 1);
+      const y = clamp((leftWristPosition.y - leftShoulderPosition.y) / video.height, -1, 1);
+      $joint.querySelector(`.x`).innerText = $joint.querySelector(`.progress-x`).value = x.toPrecision(2);
+      $joint.querySelector(`.y`).innerText = $joint.querySelector(`.progress-y`).value = y.toPrecision(2);
     } else {
       $joints.innerHTML += `
           <div class="pose" data-pose="${poseI}">
@@ -187,14 +189,14 @@ async function draw() {
               <div class="grid">
                 <span class="label">x:</span>
                 <span class="x"></span>
-                <progress class="progress-x" min="0" max="1" value="0"></progress>
+                <input type="range" class="progress-x" min="-1" max="1" value="0"></input>
                 <button onclick="sendTest(${poseI * 17 + 17}, 1)">test</button>
               </div>
 
               <div class="grid">
                 <span class="label">y:</span>
                 <span class="y"></span>
-                <progress class="progress-y" min="0" max="1" value="0"></progress>
+                <input type="range"  class="progress-y" min="-1" max="1" value="0"></input>
                 <button onclick="sendTest(${poseI * 17 + 17}, 2)">test</button>
               </div>
            </div>
