@@ -87,7 +87,7 @@ async function setup() {
 
     if (result) {
       const [person, keypoint] = result
-      if (keypoint.part == draggingFromKeypoint.part) {
+      if (keypoint.part == draggingFromKeypoint.part && person == draggingFromPerson) {
         trackedItems.push({
           person,
           part: keypoint.part,
@@ -107,11 +107,12 @@ async function setup() {
         })
       }
       
-      draggingFromKeypoint = null
-      draggingFromPerson = null
-      
+  
       localStorage.setItem('trackedItems', JSON.stringify(trackedItems))
     }
+    
+    draggingFromKeypoint = null
+    draggingFromPerson = null
   })
 
   // STYLE
@@ -214,7 +215,7 @@ async function draw() {
             const x = clamp(keypoint.position.x / video.width, 0, 1);
             const y = clamp(keypoint.position.y / video.height, 0, 1);
 
-            if (currentMidiOutput && !video.elt.paused) {
+            if (currentMidiOutput) {
               currentMidiOutput.sendControlChange(i, map(x, 0, 1, 0, 127), 1);
               currentMidiOutput.sendControlChange(i, map(y, 0, 1, 0, 127), 2);
             }
@@ -262,11 +263,23 @@ async function draw() {
           const keypointA = poses[item.personA].keypoints.find(kp => kp.part == item.partA)
           const keypointB = poses[item.personB].keypoints.find(kp => kp.part == item.partB)
 
+          
+          if (lastPoses[item.personA]) {
+            const lastKeypoint = lastPoses[item.person].keypoints.find(kp => kp.part == item.part)
+
+            const changeX = clamp((keypoint.position.x - lastKeypoint.position.x) / video.width, 0, 1) 
+            const changeY = clamp((keypoint.position.y - lastKeypoint.position.y) / video.height, 0, 1)
+            const change = changeX + changeY
+
+            item.velocity = Math.max(lerp(item.velocity, change, 0.5), 0.001)
+          }
+          
+          
           if ($el) {
             const x = clamp((keypointA.position.x - keypointB.position.x) / video.width, -1, 1);
             const y = clamp((keypointA.position.y - keypointB.position.y) / video.height, -1, 1);
 
-            if (currentMidiOutput && !video.elt.paused) {
+            if (currentMidiOutput) {
               currentMidiOutput.sendControlChange(i, map(x, -1, 1, 0, 127), 1);
               currentMidiOutput.sendControlChange(i, map(y, -1, 1, 0, 127), 2);
             }
@@ -275,12 +288,12 @@ async function draw() {
             $el.querySelector(`.y`).innerText = y.toPrecision(2);
             $el.classList.toggle('highlight', item.highlighted)
           } else {
-              let secondperson = item.personA == item.personB ? '' : `PERSON ${item.personB} <span class="sep">-</span>` 
+              let secondperson = item.personA == item.personB ? '' : `PERSON ${item.personB}<span class="sep">'s</span>` 
               $joints.innerHTML += `
                   <div class="tracked-item relative" data-part="${item.partA}-${item.partB}" data-person="${item.personA}-${item.personB}">
                     <div>
                       <span class="index">${i}</span>
-                      <span class="name">PERSON ${item.personA} <span class="sep">-</span> ${item.partA} <span class="sep">to</span> ${secondperson} ${item.partB}</span>
+                      <span class="name">PERSON ${item.personA}<span class="sep">'s</span> ${item.partA} <span class="sep">to</span> ${secondperson} ${item.partB}</span>
                       <button class="delete" onclick="deleteTrackedItem(${i})">x</button>
                     </div>
 
@@ -396,11 +409,13 @@ function drawSkeleton() {
 function drawKeypoints() {
   for (let i = 0; i < poses.length; i++) {
     const pose = poses[i];
-    for (const { position, part } of pose.keypoints) {
+    for (const keypoint of pose.keypoints) {
+      const { position, part } = keypoint
       const { x, y } = position;
       
       const trackedItem = trackedItems.find(item => item.part == part && item.person == i)
       const mouseOver = dist(x, y, mouseX, mouseY) < jointRadius
+      
       
       if (mouseOver || trackedItem) {
         fill("#00ffff");
@@ -409,8 +424,18 @@ function drawKeypoints() {
 
         fill("black");
         // stroke("white");
+      } else {
+        // if (trackedItem) {
+        //   trackedItem.highlight = false;
+        // }
         
-        if (mouseOver) {
+        fill("white");
+        stroke("black");
+        ellipse(x, y, jointRadius);
+      }
+      
+      
+       if (mouseOver || (draggingFromKeypoint && draggingFromKeypoint.part == keypoint.part && i == draggingFromPerson)) {
           // if (trackedItem) {
           //     trackedItem.highlight = true;
           // } 
@@ -420,16 +445,6 @@ function drawKeypoints() {
           rect(bbox.x - textBoxPadding, bbox.y - textBoxPadding, bbox.w + textBoxPadding * 2, bbox.h + textBoxPadding * 2);
           fill("white");
           text(part, x, y);  
-        }
-        
-      } else {
-        // if (trackedItem) {
-        //   trackedItem.highlight = false;
-        // }
-        
-        fill("white");
-        stroke("black");
-        ellipse(x, y, jointRadius);
       }
     }
   }
