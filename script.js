@@ -21,6 +21,8 @@ let lastPoses = [];
 let poses = [];
 let trackedItems = []
 let draggingFromKeypoint = null;
+let draggingFromPerson = null;
+
 
 // Slider
 let draggingSlider = false;
@@ -52,37 +54,51 @@ async function setup() {
   canvas.parent("main");
 
   canvas.mousePressed(() => {
-    const [person, keypoint] = searchIfOnAKeypoint()
-    
-    if (keypoint) {
-      draggingFromKeypoint = keypoint
+    const result = searchIfOnAKeypoint()
+        console.log(result)
+
+    if (result) {
+      draggingFromKeypoint = result[1]
+      draggingFromPerson = result[0]
     } else {
       // It's on the background
-    if (video.elt.paused) {
-      video.loop();
-    } else {
-      video.pause();
+      if (video.elt.paused) {
+        video.loop();
+      } else {
+        video.pause();
+      }
     }
-    }
-    
-    return;
-    
-    
   });
   
   
   canvas.mouseReleased(() => {
+    const result = searchIfOnAKeypoint()
     
-    
-    
-    trackedItems.push({
-      personA: i,
-      personB: i,
-      partA: draggingFromKeypoint.part,
-      highlight: false,
-      type: 'absolute' // or relative
-    })
-    
+    console.log(result)
+
+    if (result) {
+      const [person, keypoint] = result
+      if (keypoint.part == draggingFromKeypoint.part) {
+        trackedItems.push({
+          person,
+          part: keypoint.part,
+          highlight: false,
+          type: 'absolute' // or relative
+        })
+      } else {
+        trackedItems.push({
+          personA: draggingFromPerson,
+          personB: person,
+          partA: draggingFromKeypoint.part,
+          partB: keypoint.part,
+          highlight: false,
+          type: 'relative' // or relative
+        })
+      }
+      
+      draggingFromKeypoint = null
+      draggingFromPerson = null
+    }
   })
 
   // STYLE
@@ -162,36 +178,7 @@ async function draw() {
     const item = trackedItems[i];
     
     if (item.type == 'relative') {
-//       let $el = $(`.tracked-item:nth-child(${i})`);
-          
-//       if ($el) {
-//         const x = clamp((partA.position.x - partB.position.x) / video.width, -1, 1);
-//         const y = clamp((partA.position.y - partB.position.y) / video.height, -1, 1);
-
-//         if (currentMidiOutput && !video.elt.paused) {
-//           currentMidiOutput.sendControlChange(poseI * 17 + 17, map(x, -1, 1, 0, 127), 1);
-//           currentMidiOutput.sendControlChange(poseI * 17 + 17, map(y, -1, 1, 0, 127), 2);
-//         }
-
-//         $el.querySelector(`.rel-x`).innerText = x.toPrecision(2);
-//         $el.querySelector(`.rel-y`).innerText = y.toPrecision(2);
-
-//       } else {
-//           $pose.innerHTML += `
-//               <div class="joint" data-part="${partA.part}-${partB.part}" data-pose="${poseI}">
-//                 <div>
-//                   <span class="index">${midiI}</span>
-//                   <span class="name"></span>
-//                 </div>
-
-
-//              </div>
-//           `;
-//       }
-    }
-    
-    if (item.type == 'absolute') {
-      let $el = $(`.tracked-item[data-part="${item.part}"]`);
+      let $el = $(`.tracked-item[data-part="${item.partA}-${item.partB}"]`);
       
       if (poses[item.person]) {
           const keypoint = poses[item.person].keypoints.find(kp => kp.part == item.part)
@@ -210,7 +197,49 @@ async function draw() {
             $el.classList.toggle('highlight', item.highlighted)
           } else {
               $joints.innerHTML += `
-                  <div class="tracked-item absolute" data-part="${item.part}">
+                  <div class="tracked-item relative" data-part="${item.part}" data-person="${item.person}">
+                    <div>
+                      <span class="index">${i}</span>
+                      <span class="name">PERSON ${item.person} <span class="sep">-</span> ${item.part}</span>
+                    </div>
+
+                    <div>
+                      <span class="sep">x: </span>
+                      <span class="x"></span> 
+                      <button class="test" onclick="sendTest(${i}, 1)">test</button>
+
+                      <br>
+                      <span class="sep">y: </span>
+                      <span class="y"></span>
+                      <button class="test" onclick="sendTest(${i}, 2)">test</button>
+                      </div>
+                 </div>
+              `;
+          }
+        }
+    }
+    
+    if (item.type == 'absolute') {
+      let $el = $(`.tracked-item[data-part="${item.part}"][data-person="${item.person}"]`);
+      
+      if (poses[item.person]) {
+          const keypoint = poses[item.person].keypoints.find(kp => kp.part == item.part)
+
+          if ($el) {
+            const x = clamp(keypoint.position.x / video.width, -1, 1);
+            const y = clamp(keypoint.position.y / video.height, -1, 1);
+
+            if (currentMidiOutput && !video.elt.paused) {
+              currentMidiOutput.sendControlChange(i, map(x, 0, 1, 0, 127), 1);
+              currentMidiOutput.sendControlChange(i, map(y, 0, 1, 0, 127), 2);
+            }
+
+            $el.querySelector(`.x`).innerText = x.toPrecision(2);
+            $el.querySelector(`.y`).innerText = y.toPrecision(2);
+            $el.classList.toggle('highlight', item.highlighted)
+          } else {
+              $joints.innerHTML += `
+                  <div class="tracked-item absolute" data-part="${item.part}" data-person="${item.person}">
                     <div>
                       <span class="index">${i}</span>
                       <span class="name">PERSON ${item.person} <span class="sep">-</span> ${item.part}</span>
@@ -286,6 +315,11 @@ async function draw() {
   // We can call both functions to draw all keypoints and the skeleton
   drawSkeleton();
   drawKeypoints();
+  
+  if (draggingFromKeypoint) {
+    stroke("#00ffff");
+    line(draggingFromKeypoint.position.x, draggingFromKeypoint.position.y, mouseX, mouseY);
+  }
 }
 
 // A function to draw the skeletons
