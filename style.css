@@ -76,7 +76,7 @@ main.half-transparent {
   grid-column: 1;
   border-top: 1px solid #ffffff3d;
   display: grid;
-  grid-template-columns: 30px 100px 30px 100px;
+  grid-template-columns: 30px 100px 30px 100px repeat(4, 1fr);
 }
 
 .joint .name {
@@ -197,6 +197,7 @@ button.play-pause {
     margin-right: 15px;
     border-radius: 0;
     opacity: 1;
+    display: none;
 }
 
 
@@ -209,5 +210,9 @@ button.play-pause {
 }
 
 .pose > .name > span:not(:first-child) {
+    text-align: end;
+}
+
+.joint > .rel-x, .rel-y, .abs-x, .abs-y {
     text-align: end;
 }

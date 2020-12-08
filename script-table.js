@@ -1,4 +1,4 @@
-/* global strokeWeight, stroke, frameRate, posenet, createVideo, createCanvas, fill, ellipse, image, line, width, height, WebMidi, dist, mouseX, mouseY, map */
+/* global strokeWeight, stroke, frameRate, posenet, createVideo, createCanvas, fill, ellipse, image, line, width, height, WebMidi, dist, mouseX, mouseY */
 let video, net, currentMidiOutput;
 
 const $ = selector => document.querySelector(selector);
@@ -19,7 +19,7 @@ const $poseData = $(".pose-data");
 // Poses, mappings, data
 let lastPoses = [];
 let poses = [];
-let trackedItems = []
+let trackedJoints = [[], [], [], [], []]
 
 // Slider
 let draggingSlider = false;
@@ -43,11 +43,7 @@ async function setup() {
         const { x, y } = position;
 
         if (dist(x, y, mouseX, mouseY) < jointRadius) {
-          trackedItems.push({
-            person: i,
-            part,
-            type: 'absolute' // or relative
-          })
+          trackedJoints[i].push(part)
           return;
         }
       }
@@ -132,76 +128,8 @@ async function draw() {
     (a, b) => a.keypoints[0].position.x - b.keypoints[0].position.x
   );
 
-  // SEND MIDI AND UPDATE UI =========================
+  // KEYPOINTS =======================================
   // =================================================
-  for (let i = 0; i < trackedItems.length; i++) {
-    const item = trackedItems[i];
-    
-    if (item.type == 'relative') {
-//       let $el = $(`.tracked-item:nth-child(${i})`);
-          
-//       if ($el) {
-//         const x = clamp((partA.position.x - partB.position.x) / video.width, -1, 1);
-//         const y = clamp((partA.position.y - partB.position.y) / video.height, -1, 1);
-
-//         if (currentMidiOutput && !video.elt.paused) {
-//           currentMidiOutput.sendControlChange(poseI * 17 + 17, map(x, -1, 1, 0, 127), 1);
-//           currentMidiOutput.sendControlChange(poseI * 17 + 17, map(y, -1, 1, 0, 127), 2);
-//         }
-
-//         $el.querySelector(`.rel-x`).innerText = x.toPrecision(2);
-//         $el.querySelector(`.rel-y`).innerText = y.toPrecision(2);
-
-//       } else {
-//           $pose.innerHTML += `
-//               <div class="joint" data-part="${partA.part}-${partB.part}" data-pose="${poseI}">
-//                 <div>
-//                   <span class="index">${midiI}</span>
-//                   <span class="name"></span>
-//                 </div>
-
-
-//              </div>
-//           `;
-//       }
-    }
-    
-    if (item.type == 'absolute') {
-      let $el = $(`.tracked-item:nth-child(${i})`);
-      const keypoint = poses[item.person].find(pose => pose.)
-          
-      if ($el) {
-        const x = clamp(keypoint.position.x / video.width, -1, 1);
-        const y = clamp(keypoint.position.y / video.height, -1, 1);
-
-        if (currentMidiOutput && !video.elt.paused) {
-          currentMidiOutput.sendControlChange(i, map(x, 0, 1, 0, 127), 1);
-          currentMidiOutput.sendControlChange(i, map(y, 0, 1, 0, 127), 2);
-        }
-
-        $el.querySelector(`.rel-x`).innerText = x.toPrecision(2);
-        $el.querySelector(`.rel-y`).innerText = y.toPrecision(2);
-
-      } else {
-          $joints.innerHTML += `
-              <div class="tracked-item absolute" data-part="${item.part}">
-                <div>
-                  <span class="index">${i}</span>
-                  <span class="name"></span>
-                </div>
-
-
-             </div>
-          `;
-      }
-    }
-    
-  }
-
-  
-  
-  
-  
   for (let poseI = 0; poseI < poses.length; poseI++) {
     const pose = poses[poseI];
 
@@ -212,7 +140,36 @@ async function draw() {
         skeleton.forEach(([partA, partB], i) => {
           const midiI = poseI * 12 + i;
 
+          let $el = $pose.querySelector(`.joint[data-part="${partA.part}-${partB.part}"]`);
           
+          if ($el) {
+            const x = clamp((partA.position.x - partB.position.x) / video.width, -1, 1);
+            const y = clamp((partA.position.y - partB.position.y) / video.height, -1, 1);
+
+            if (currentMidiOutput && !video.elt.paused) {
+              currentMidiOutput.sendControlChange(poseI * 17 + 17, map(x, -1, 1, 0, 127), 1);
+              currentMidiOutput.sendControlChange(poseI * 17 + 17, map(y, -1, 1, 0, 127), 2);
+            }
+            
+            $el.querySelector(`.rel-x`).innerText = x.toPrecision(2);
+            $el.querySelector(`.rel-y`).innerText = y.toPrecision(2);
+            
+          } else {
+              $pose.innerHTML += `
+                  <div class="joint" data-part="${partA.part}-${partB.part}" data-pose="${poseI}">
+                    <span class="index">${midiI}</span>
+
+                    <span class="part-a">${partA.part}</span>
+                    <span class="sep">-</span>
+                    <span class="part-b">${partB.part}</span>
+       
+                    <span class="rel-x"></span>
+                    <span class="rel-y"></span>
+                    <span class="abs-x">-</span>
+                    <span class="abs-y">-</span>
+                 </div>
+              `;
+          }
         });
     } else {
       $joints.innerHTML += `
