@@ -44,6 +44,7 @@ main .inner {
 .pose > .name {
     font-weight: bold;
     margin-top: 20px;
+    grid-column: 1 / span 2;
 }
 
 .midi {
@@ -64,6 +65,7 @@ main .inner {
   margin-top: 5px;
   padding-top: 5px;
   border-top: 1px solid #ffffff3d;
+
 }
 
 .joint .name {
@@ -84,13 +86,15 @@ main .inner {
 @media(min-width: 800px) {
   .joints {
     grid-template-columns: 1fr 1fr;
-    grid-gap: 30px 50px;
+    grid-gap: 30px 30px;
   }
 }
 
 @media(min-width: 1200px) {
-  .joints {
-    grid-template-columns: 1fr 1fr 1fr;
+  .pose {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 0 20px;
   }
 }
 

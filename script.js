@@ -48,6 +48,7 @@ async function setup() {
 
   net = await posenet.load({
     // architecture: 'ResNet50',
+    inputResolution: { width: 640, height: 480 },
     quantBytes: 4
   });
 
@@ -78,6 +79,12 @@ async function draw() {
     console.log(e);
     return;
   }
+  
+  
+  // ORDER POSES BY LEFT/RIGHT =======================
+  // =================================================
+  poses = poses.sort(pose => pose.keypoints[0].position.x)
+  
 
   // KEYPOINTS =======================================
   // =================================================
