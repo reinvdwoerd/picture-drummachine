@@ -103,7 +103,8 @@ async function setup() {
           partB: keypoint.part,
           highlight: false,
           type: 'relative', // or relative
-          velocity: 0
+          velocity: 0,
+          lastDistance: 0
         })
       }
       
@@ -263,35 +264,34 @@ async function draw() {
       if (poses[item.personA] && poses[item.personB]) {
           const keypointA = poses[item.personA].keypoints.find(kp => kp.part == item.partA)
           const keypointB = poses[item.personB].keypoints.find(kp => kp.part == item.partB)
-          const distanceNow = dist(keypointA.position.x, keypointA.position.y, keypointB.position.x, keypointB.position.y)
+          // const distanceNow = dist(keypointA.position.x, keypointA.position.y, keypointB.position.x, keypointB.position.y)
 
-          
-          if (lastPoses[item.personA] && lastPoses[item.personB]) {
-            const lastKeypointA = lastPoses[item.personA].keypoints.find(kp => kp.part == item.part)
-            const lastKeypointB = lastPoses[item.personB].keypoints.find(kp => kp.part == item.part)
-
-                          console.log(lastPoses[item.personA],  lastPoses[item.personB])
-
-            if (lastKeypointA && lastKeypointB) {
-              console.log(lastKeypointA, lastKeypointB)
-              const lastDistance = dist(lastKeypointA.position.x, lastKeypointA.position.y, lastKeypointB.position.x, lastKeypointB.position.y)
-              const change = Math.abs(distanceNow - lastDistance)
-
-              item.velocity = lerp(item.velocity, change, 0.5), 0.001)
-            }
+            const x = clamp((keypointA.position.x - keypointB.position.x) / video.width, -1, 1);
+            const y = clamp((keypointA.position.y - keypointB.position.y) / video.height, -1, 1);
             
-          }
+                const distanceNow = Math.sqrt(x * x + y * y)
+          
+                if (isNaN(item.velocity)) item.velocity = 0
+        
+            const change = distanceNow - item.lastDistance        
+      
+
+            item.velocity = Math.max(lerp(item.velocity, change, 0.5), 0.001)
+              
+                item.lastDistance = distanceNow
+
+            
+            
+          
           
           
           if ($el) {
-            const x = clamp((keypointA.position.x - keypointB.position.x) / video.width, -1, 1);
-            const y = clamp((keypointA.position.y - keypointB.position.y) / video.height, -1, 1);
-            const distanceNow = Math.sqrt(x * x + y * y)
+            
 
             if (currentMidiOutput) {
               currentMidiOutput.sendControlChange(i, map(x, -1, 1, 0, 127), 1);
               currentMidiOutput.sendControlChange(i, map(y, -1, 1, 0, 127), 2);
-              currentMidiOutput.sendControlChange(i, map(item.velocity, 0, 1, 0, 127), 3);
+              currentMidiOutput.sendControlChange(i, clamp(map(item.velocity, 0, 1, 0, 127), 0, 127), 3);
               currentMidiOutput.sendControlChange(i, map(distanceNow, 0, 1, 0, 127), 4);
             }
 
