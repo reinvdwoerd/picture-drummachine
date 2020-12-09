@@ -32,6 +32,10 @@ const $ui = new Vue({
     draggingFromKeypoint: null,
     draggingFromPerson: null,
     
+    
+    videoDuration: 1,
+    currentTime: 0,
+
     // Slider
     draggingSlider: false,
     wasPaused: false,
@@ -41,6 +45,7 @@ const $ui = new Vue({
   mounted() {
     // storage
     this.trackedItems = JSON.parse(localStorage.getItem('trackedItems')) || []
+    this.videoDuration = video.elt.duration
   },
   
   methods: {
@@ -186,10 +191,7 @@ async function draw() {
   if ($ui.draggingSlider) {
     image(video, 0, 0, width, height);
     return;
-  } else {
-    $positionSlider.value = currentTime;
-    $positionSlider.setAttribute("max", video.elt.duration);
-  }
+  } 
 
   try {
     // Video position
@@ -293,13 +295,9 @@ async function draw() {
             
             $el.querySelector(`.x`).innerText = x.toPrecision(2);
             $el.querySelector(`.y`).innerText = y.toPrecision(2);
-          } else {
-              let secondperson = item.personA == item.personB ? '' : `PERSON ${item.personB}<span class="sep">'s</span>` 
-              $joints.innerHTML += `
-                  <
-              `;
           }
     }
+  }
 
 
 

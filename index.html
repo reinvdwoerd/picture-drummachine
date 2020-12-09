@@ -28,7 +28,8 @@
         ondragover="dragOverHandler(event);"
       >
         <div class="playback-controls">
-          <input class="position" type="range" min="0" max="1" step="any" />
+          <input class="position" type="range" min="0" :max="currentTime" step="any" :value="currentTime" 
+                 @input="onPositionInput" @change="onPositionChange" @mousedown="onPositionDown" />
           <div class="playback-speed-container">
             <label class="playback-speed-label">
               speed:
