@@ -1,4 +1,6 @@
-/* global strokeWeight, stroke, frameRate, posenet, createVideo, createCanvas, fill, ellipse, image, line, width, height, WebMidi, dist, mouseX, mouseY, map */
+/* global Vue, strokeWeight, stroke, frameRate, posenet, createVideo, createCanvas, fill, ellipse, image, line, width, height, WebMidi, dist, mouseX, mouseY, map */
+
+
 let video, net, currentMidiOutput, font;
 
 const $ = selector => document.querySelector(selector);
@@ -16,38 +18,53 @@ const $currentFrame = $(".current-frame span");
 const $poseData = $(".pose-data");
 
 
-// Poses, mappings, data
-let lastPoses = [];
-let poses = [];
-let trackedItems = []
-let draggingFromKeypoint = null;
-let draggingFromPerson = null;
 
+const $ui = new Vue({
+  el: '#posemidi',
+  data: {
+    // Poses, mappings, etc.
+    lastPoses: [],
+    poses: [],
+    trackedItems: [],
+    
+    // Drag and drop connections
+    draggingFromKeypoint: null,
+    draggingFromPerson: null,
+    
+    // Slider
+    draggingSlider: false,
+    wasPaused: false
+  },
+  
+  mounted() {
+    // storage
+    this.trackedItems = JSON.parse(localStorage.getItem('trackedItems')) || []
+  
+  },
+  
+  methods: {
+    searchIfOnAKeypoint()  {
+      for (let i = 0; i < this.poses.length; i++) {
+          const pose = this.poses[i];
+          for (const keypoint of pose.keypoints) {
+            const { position, part } = keypoint
+            const { x, y } = position;
 
-// Slider
-let draggingSlider = false;
-let wasPaused = null;
-
-// Constants
-let jointRadius = 20;
-let textBoxPadding = 5;
-
-
-
-function searchIfOnAKeypoint()  {
-  for (let i = 0; i < poses.length; i++) {
-      const pose = poses[i];
-      for (const keypoint of pose.keypoints) {
-        const { position, part } = keypoint
-        const { x, y } = position;
-
-        // It's on a dot
-        if (dist(x, y, mouseX, mouseY) < jointRadius) {
-          return [i, keypoint]
+            // It's on a dot
+            if (dist(x, y, mouseX, mouseY) < jointRadius) {
+              return [i, keypoint]
+            }
         }
+      }
     }
   }
-}
+})
+
+
+// Constants
+const jointRadius = 20;
+const textBoxPadding = 5;
+
 
 
 async function setup() {
@@ -59,8 +76,6 @@ async function setup() {
   font = loadFont('https://cdn.glitch.com/d781fd93-be94-46a0-a508-c751384d9f8a%2FCourier%20New%20Regular.ttf?v=1607412096016')
   textFont(font)
   
-  // storage
-  trackedItems = JSON.parse(localStorage.getItem('trackedItems')) || []
   
   canvas.mousePressed(() => {
     const result = searchIfOnAKeypoint()
@@ -592,9 +607,6 @@ function clamp(num, min, max) {
   return num <= min ? min : num >= max ? max : num;
 }
 
-function lerp(v0, v1, t) {
-    return v0*(1-t)+v1*t
-}
 
 // DRAG AND DROP ===================================
 // =================================================
