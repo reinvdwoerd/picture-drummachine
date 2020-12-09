@@ -300,18 +300,18 @@ async function draw() {
             item.y = y
         
             const mappedValues = {
-              x: map(x, mapping.x[0], mapping.x[1], 0, 1),
-              y: map(y, mapping.y[0], mapping.y[1], 0, 1),
-              velocity: map(item.velocity, mapping.velocity[0], mapping.velocity[1], 0, 1),
+              x: map(x, mapping.x[0], mapping.x[1], 0, 127, true),
+              y: map(y, mapping.y[0], mapping.y[1], 0, 127, true),
+              velocity: map(item.velocity, mapping.velocity[0], mapping.velocity[1], 0, 127, true),
             }
             
             item.mappedValues= mappedValues
         
             if (currentMidiOutput && !video.elt.paused) {
               console.log('sent!!!')
-              currentMidiOutput.sendControlChange(midiI, map(mappedValues.x, 0, 1, 0, 127, true), 1);
-              currentMidiOutput.sendControlChange(midiI, map(mappedValues.y, 0, 1, 0, 127, true), 2);
-              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.velocity, 0, 1, 0, 127, true), 3);
+              currentMidiOutput.sendControlChange(midiI, mappedValues.x, 1);
+              currentMidiOutput.sendControlChange(midiI, mappedValues.y, 2);
+              currentMidiOutput.sendControlChange(midiI + 1, mappedValues.velocity, 3);
             }
           }
       }
@@ -340,19 +340,19 @@ async function draw() {
             item.lastDistance = distanceNow
   
             const mappedValues = {
-              x: map(x, mapping.x[0], mapping.x[1], -1, 1),
-              y: map(y, mapping.y[0], mapping.y[1], -1, 1),
-              velocity: map(item.velocity, mapping.velocity[0], mapping.velocity[1], 0, 1),
-              length: map(item.lastDistance, mapping.length[0], mapping.length[1], 0, 1),
+              x: map(x, mapping.x[0], mapping.x[1], 0, 127, true),
+              y: map(y, mapping.y[0], mapping.y[1], 0, 127, true),
+              velocity: map(item.velocity, mapping.velocity[0], mapping.velocity[1], 0, 127, true),
+              length: map(item.lastDistance, mapping.length[0], mapping.length[1], 0, 127, true),
             }
             
             item.mappedValues = mappedValues
 
             if (currentMidiOutput && !video.elt.paused) {
-              currentMidiOutput.sendControlChange(midiI, map(mappedValues.x, -1, 1, 0, 127, true), 1);
-              currentMidiOutput.sendControlChange(midiI, map(mappedValues.y, -1, 1, 0, 127, true), 2);
-              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.velocity, 0, 1, 0, 127, true), 1);
-              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.length, 0, 1, 0, 127, true), 2);
+              currentMidiOutput.sendControlChange(midiI, mappedValues.x, 1);
+              currentMidiOutput.sendControlChange(midiI, mappedValues.y, 2);
+              currentMidiOutput.sendControlChange(midiI + 1, mappedValues.velocity, 1);
+              currentMidiOutput.sendControlChange(midiI + 1, mappedValues.length, 2);
             }
           }
     }
