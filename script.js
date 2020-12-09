@@ -206,12 +206,12 @@ async function draw() {
     // Video position
     if (!net || video.elt.readyState != 4) return;
     $ui.lastPoses = $ui.poses
-    $ui.poses = await net.estimateMultiplePoses(video.elt, {
-      flipHorizontal: false,
-      maxDetections: 2,
-      scoreThreshold: 0.75,
-      nmsRadius: 20
-    });
+    // $ui.poses = await net.estimateMultiplePoses(video.elt, {
+    //   flipHorizontal: false,
+    //   maxDetections: 2,
+    //   scoreThreshold: 0.75,
+    //   nmsRadius: 20
+    // });
   } catch (e) {
     console.log(e);
     return;
@@ -246,10 +246,12 @@ async function draw() {
             item.velocity = Math.max(lerp(item.velocity, change, 0.4), 0.001)
           }
           
-          
             const x = clamp(keypoint.position.x / video.width, 0, 1);
             const y = clamp(keypoint.position.y / video.height, 0, 1);
-
+           
+            item.x = x.toPrecision(2)
+            item.y = y.toPrecision(2)
+        
             if (currentMidiOutput && !video.elt.paused) {
               console.log('sent!!!')
               currentMidiOutput.sendControlChange(midiI, map(x, 0, 1, 0, 127), 1);
@@ -269,7 +271,10 @@ async function draw() {
 
             const x = clamp((keypointA.position.x - keypointB.position.x) / video.width, -1, 1);
             const y = clamp((keypointA.position.y - keypointB.position.y) / video.height, -1, 1);
-            
+                
+            item.x = x.toPrecision(2)
+            item.y = y.toPrecision(2)
+        
             const distanceNow = Math.sqrt(x * x + y * y)
           
             if (isNaN(item.velocity)) item.velocity = 0
