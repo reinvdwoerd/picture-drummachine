@@ -306,6 +306,8 @@ async function draw() {
               y: map(y, mapping.y[0], mapping.y[1], 0, 1),
               velocity: map(x, mapping.velocity[0], mapping.velocity[1], 0, 1),
             }
+            
+            item.mappedValues= mappedValues
         
             if (currentMidiOutput && !video.elt.paused) {
               console.log('sent!!!')
@@ -345,12 +347,14 @@ async function draw() {
               velocity: map(x, mapping.x[0], mapping.x[1], 0, 1),
               length: map(x, mapping.x[0], mapping.x[1], 0, 1),
             }
+            
+            item.mappedValues = mappedValues
 
             if (currentMidiOutput && !video.elt.paused) {
-              currentMidiOutput.sendControlChange(midiI, map(x, -1, 1, 0, 127), 1);
-              currentMidiOutput.sendControlChange(midiI, map(y, -1, 1, 0, 127), 2);
-              currentMidiOutput.sendControlChange(midiI + 1, clamp(map(item.velocity, 0, 1, 0, 127), 0, 127), 1);
-              currentMidiOutput.sendControlChange(midiI + 1, map(distanceNow, 0, 1, 0, 127), 2);
+              currentMidiOutput.sendControlChange(midiI, map(mappedValues.x, -1, 1, 0, 127), 1);
+              currentMidiOutput.sendControlChange(midiI, map(mappedValues.y, -1, 1, 0, 127), 2);
+              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.velocity, 0, 1, 0, 127), 1);
+              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.length, 0, 1, 0, 127), 2);
             }
           }
     }
