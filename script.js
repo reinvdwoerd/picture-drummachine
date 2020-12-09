@@ -17,6 +17,7 @@ const $ui = new Vue({
     
     videoDuration: 1,
     currentTime: 0,
+    currentMidiOutput: null,
 
     // Slider
     draggingSlider: false,
@@ -27,7 +28,6 @@ const $ui = new Vue({
   mounted() {
     // storage
     this.trackedItems = JSON.parse(localStorage.getItem('trackedItems')) || []
-    this.videoDuration = video.elt.duration
   },
   
   methods: {
@@ -47,6 +47,22 @@ const $ui = new Vue({
     },
     
     canvasMousePressed() {
+      const result = $ui.searchIfOnAKeypoint()
+
+      if (result) {
+        $ui.draggingFromKeypoint = result[1]
+        $ui.draggingFromPerson = result[0]
+      } else {
+        // It's on the background
+        if (video.elt.paused) {
+          video.loop();
+        } else {
+          video.pause();
+        }
+      }
+    },
+    
+    canvasMouseReleased() {
       const result = $ui.searchIfOnAKeypoint()
     
       if (result) {
@@ -84,28 +100,11 @@ const $ui = new Vue({
           })
         }
 
-
         localStorage.setItem('trackedItems', JSON.stringify($ui.trackedItems))
       }
 
       $ui.draggingFromKeypoint = null
       $ui.draggingFromPerson = null
-    },
-    
-    canvasMouseReleased() {
-      const result = $ui.searchIfOnAKeypoint()
-
-      if (result) {
-        $ui.draggingFromKeypoint = result[1]
-        $ui.draggingFromPerson = result[0]
-      } else {
-        // It's on the background
-        if (video.elt.paused) {
-          video.loop();
-        } else {
-          video.pause();
-        }
-      }
     },
     
     onSpeedInput(e) {
@@ -129,9 +128,9 @@ const $ui = new Vue({
       this.draggingSlider = false;
     },
     
-    onMidiOutputChange() {
-      currentMidiOutput = WebMidi.getOutputByName($midiOutputSelect.value);
-      console.log("changed output to: ", currentMidiOutput.name);
+    onMidiOutputChange(e) {
+      this.currentMidiOutput = WebMidi.getOutputByName(e.target.value);
+      console.log("changed output to: ", this.currentMidiOutput.name);
     }
   }
 })
@@ -196,6 +195,7 @@ async function setup() {
 // DRAW ===========================================
 async function draw() {
   // THE UPDATING ---
+  $ui.videoDuration = video.elt.duration
 
   if ($ui.draggingSlider) {
     image(video, 0, 0, width, height);

@@ -66,11 +66,9 @@
         </header>
 
         <div class="joints">
-          <div v-for="(item, i) in trackedItems"
+          <div v-for="(i, ite) in trackedItems"
             v-if="item.type == 'absolute'"
             class="tracked-item absolute"
-            :data-part="item.part"
-            :data-person="item.person"
           >
             <div>
               <span class="index">{{i}}</span>
@@ -82,30 +80,27 @@
             </div>
 
             <div>
-<!--               <span class="sep">x: </span>
-              <span class="x"></span>
-              <span class="x"></span>
+              <span class="sep">x: </span>
+              <span class="x">{{item.x}}</span>
               <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
 
               <br />
               <span class="sep">y: </span>
-              <span class="y"></span>
+              <span class="y">{{item.y}}</span>
               <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
 
               <br />
               <span class="sep">velocity: </span>
-              <span class="velocity"></span>
+              <span class="velocity">{{item.velocity}}</span>
               <button class="test" onclick="sendTest(${midiI + 1}, 3)">
                 test
-              </button> -->
+              </button>
             </div>
           </div>
           
           <div v-for="(item, i) in trackedItems"
             v-if="item.type == 'relative'"
             class="tracked-item relative"
-            :data-part="item.part"
-            :data-person="item.person"
           >
             <div>
               <span class="index">{{i}}</span>
@@ -117,22 +112,21 @@
             </div>
 
             <div>
-<!--               <span class="sep">x: </span>
-              <span class="x"></span>
-              <span class="x"></span>
+               <span class="sep">x: </span>
+              <span class="x">{{item.x}}</span>
               <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
 
               <br />
               <span class="sep">y: </span>
-              <span class="y"></span>
+              <span class="y">{{item.y}}</span>
               <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
 
               <br />
               <span class="sep">velocity: </span>
-              <span class="velocity"></span>
+              <span class="velocity">{{item.velocity}}</span>
               <button class="test" onclick="sendTest(${midiI + 1}, 3)">
                 test
-              </button> -->
+              </button>
             </div>
           </div>
         </div>

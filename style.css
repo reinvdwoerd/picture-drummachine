@@ -14,6 +14,10 @@ body {
   
 }
 
+#posemidi {
+  display: contents;
+}
+
 
 .playback-speed-container {
   display: flex;
