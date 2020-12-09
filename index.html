@@ -87,12 +87,14 @@
               <div>
                 <span class="sep">x: </span>
                 <span class="x">{{item.x}}</span>
+                <input/>
                 <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
               </div>
               
               <div>
                 <span class="sep">y: </span>
                 <span class="y">{{item.y}}</span>
+                <input/>
                 <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
               </div>
               
@@ -148,15 +150,22 @@
               </div>
               
               <div>
-                
                 <span class="sep">x: </span>
                 <span class="x">{{item.x}}</span>
+                <input/>
                 <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
+              </div>
+              
+              <div class="index-container"> 
+                 <div class="index-channel">
+                  {{i}}
+                </div>
               </div>
               
               <div>
                 <span class="sep">y: </span>
                 <span class="y">{{item.y}}</span>
+                <input/>
                 <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
               </div>
               
@@ -172,14 +181,22 @@
               <div>
                 <span class="sep">velocity: </span>
                 <span class="velocity">{{item.velocity.toPrecision(2)}}</span>
+                <input/>
                 <button class="test" onclick="sendTest(${midiI + 1}, 1)">
                   test
                 </button>
               </div>
               
+              <div class="index-container"> 
+                 <div class="index-channel">
+                  {{i}}
+                </div>
+              </div>
+              
               <div>
                 <span class="sep">length: </span>
                 <span class="length">{{item.lastDistance.toPrecision(2)}}</span>
+                <input/>
                 <button class="test" onclick="sendTest(${midiI + 1}, 2)">
                   test
                 </button>

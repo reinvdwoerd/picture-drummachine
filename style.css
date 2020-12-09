@@ -254,15 +254,15 @@ input {
 
 .tracked-item > div:not(:first-child) {
     display: grid;
-    grid-template-columns: 40px auto;
+    grid-template-columns: 45px auto;
     align-items: start;
     justify-content: flex-start;
     /* margin-bottom: 5px; */
     /* margin-top: 10px; */
-    /* grid-gap: 10px 10px; */
+    grid-gap: 0px 10px;
 }
 
-.index {
+.index, .index-channel {
     background: white;
     color: black;
     opacity: 1;
@@ -275,12 +275,12 @@ input {
 
 .tracked-item > div {}
 
-.tracked-item > div:nth-child(2) > div:not(.index) {
+.tracked-item > div:nth-child(2) > div:not(.index-container) {
     grid-column: 2;
     width: 100%;
     display: grid;
     /* align-items: flex-start; */
-    grid-template-columns: 100px 100px 200px 1fr auto;
+    grid-template-columns: 100px 100px 200px auto;
 }
 
 .tracked-item .name {
@@ -296,3 +296,16 @@ input {
 }
 
 button.test {}
+
+.index-channel {
+    background: #ffffff30;
+    color: white;
+    /* border: 1px solid white; */
+    /* margin-left: auto; */
+    grid-column: 2;
+}
+
+.index-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
