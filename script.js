@@ -253,14 +253,12 @@ async function draw() {
     if (!net || video.elt.readyState != 4) return;
     $ui.lastPoses = $ui.poses
     
-    if (!video.elt.paused) {
       $ui.poses = await net.estimateMultiplePoses(video.elt, {
         flipHorizontal: false,
         maxDetections: 2,
         scoreThreshold: 0.75,
         nmsRadius: 20
       });
-    }
   } catch (e) {
     console.log(e);
     return;
