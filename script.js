@@ -26,6 +26,7 @@ const $ui = new Vue({
     lastPoses: [],
     poses: [],
     trackedItems: [],
+    outputs: null,
     
     // Drag and drop connections
     draggingFromKeypoint: null,
@@ -63,7 +64,19 @@ const $ui = new Vue({
     },
     
     canvasMouseReleased() {
-      
+      const result = $ui.searchIfOnAKeypoint()
+
+      if (result) {
+        $ui.draggingFromKeypoint = result[1]
+        $ui.draggingFromPerson = result[0]
+      } else {
+        // It's on the background
+        if (video.elt.paused) {
+          video.loop();
+        } else {
+          video.pause();
+        }
+      }
     }
   }
 })
@@ -86,24 +99,12 @@ async function setup() {
   
   
   canvas.mousePressed(() => {
-    const result = $ui.searchIfOnAKeypoint()
-
-    if (result) {
-      $ui.draggingFromKeypoint = result[1]
-      $ui.draggingFromPerson = result[0]
-    } else {
-      // It's on the background
-      if (video.elt.paused) {
-        video.loop();
-      } else {
-        video.pause();
-      }
-    }
+    $ui.canvasMousePressed()
   });
   
   
   canvas.mouseReleased(() => {
-    $ui.c
+    $ui.canvasMouseReleased()
   })
 
   // STYLE
@@ -140,7 +141,7 @@ async function setup() {
 // DRAW ===========================================
 async function draw() {
   // THE UPDATING ---
-  const currentTime = draggingSlider
+  const currentTime = $ui.draggingSlider
     ? Number($positionSlider.value)
     : video.elt.currentTime;
   const currentFrame = Math.floor(currentTime * 29.97);
@@ -149,9 +150,7 @@ async function draw() {
   )} / ${video.elt.duration.toPrecision(3)}s`;
   $currentFrame.innerText = currentFrame;
 
-  // console.log(draggingSlider)
-
-  if (draggingSlider) {
+  if ($ui.draggingSlider) {
     image(video, 0, 0, width, height);
     return;
   } else {
@@ -162,8 +161,8 @@ async function draw() {
   try {
     // Video position
     if (!net || video.elt.readyState != 4) return;
-    lastPoses = poses
-    poses = await net.estimateMultiplePoses(video.elt, {
+    $ui.lastPoses = $ui.poses
+    $ui.poses = await net.estimateMultiplePoses(video.elt, {
       flipHorizontal: false,
       maxDetections: 2,
       scoreThreshold: 0.75,
@@ -176,7 +175,7 @@ async function draw() {
 
   // ORDER POSES BY NOSE POSITION =======================
   // This maintains the left/right poses ================
-  poses = poses.sort(
+  $ui.poses = $ui.poses.sort(
     (a, b) => a.keypoints[0].position.x - b.keypoints[0].position.x
   );
 
@@ -221,30 +220,7 @@ async function draw() {
             $el.classList.toggle('highlight', item.highlighted)
           } else {
               $joints.innerHTML += `
-                  <div class="tracked-item absolute" data-part="${item.part}" data-person="${item.person}">
-                    <div>
-                      <span class="index">${i}</span>
-                      <span class="name">PERSON ${item.person} <span class="sep">-</span> ${item.part}</span>
-                      <button class="delete" onclick="deleteTrackedItem(${i})">x</button>
-                    </div>
-
-                    <div>
-                      <span class="sep">x: </span>
-                      <span class="x"></span> 
-                      <span class="x"></span> 
-                      <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
-
-                      <br>
-                      <span class="sep">y: </span>
-                      <span class="y"></span>
-                      <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
-                      
-                      <br>
-                      <span class="sep">velocity: </span>
-                      <span class="velocity"></span>
-                      <button class="test" onclick="sendTest(${midiI + 1}, 3)">test</button>
-                    </div>
-                 </div>
+                  
               `;
           }
       }
@@ -355,49 +331,6 @@ async function draw() {
   }
 
 
-  
-  
-//   for (let poseI = 0; poseI < poses.length; poseI++) {
-//     const pose = poses[poseI];
-
-//     const $pose = $(`.pose[data-pose="${poseI}"]`);
-    
-//     if ($pose) {
-//         let skeleton = posenet.getAdjacentKeyPoints(pose.keypoints);
-//         skeleton.forEach(([partA, partB], i) => {
-//           const midiI = poseI * 12 + i;
-
-          
-//         });
-//     } else {
-//       $joints.innerHTML += `
-//           <div class="pose" data-pose="${poseI}" style="order: 17">
-//             <div class="name">
-//               <span>PERSON ${poseI}</span>
-              
-//               <span class="rel-x">rel. x</span>
-//               <span class="rel-y">rel. y</span>
-//               <span class="abs-x">abs. x</span>
-//               <span class="abs-y">abs. y</span>
-//             </div>
-                         
-            
-//           </div>
-//       `;
-//     }
-    
-     // Normalize values ----
-//         const x = clamp(position.x / video.width, 0, 1);
-//         const y = clamp(position.y / video.height, 0, 1);
-
-//         // MIDI OUT ------
-//         if (currentMidiOutput && !video.elt.paused) {
-//           currentMidiOutput.sendControlChange(midiI, x * 127, 1);
-//           currentMidiOutput.sendControlChange(midiI, y * 127, 2);
-//         }
-    
-
-  // console.log(frameRate())
 
   // THE DRAWING --------
   image(video, 0, 0, width, height);
@@ -405,15 +338,15 @@ async function draw() {
   drawSkeleton();
   drawKeypoints();
   
-  if (draggingFromKeypoint) {
+  if ($ui.draggingFromKeypoint) {
     stroke("#00ffff");
-    line(draggingFromKeypoint.position.x, draggingFromKeypoint.position.y, mouseX, mouseY);
+    line($ui.draggingFromKeypoint.position.x, $ui.draggingFromKeypoint.position.y, mouseX, mouseY);
   }
   
-  for (const item of trackedItems) {
-    if (item.type == 'relative' && poses[item.personA] && poses[item.personB]) {
-        const keypointA = poses[item.personA].keypoints.find(kp => kp.part == item.partA)
-        const keypointB = poses[item.personB].keypoints.find(kp => kp.part == item.partB)
+  for (const item of $ui.trackedItems) {
+    if (item.type == 'relative' && $ui.poses[item.personA] && $ui.poses[item.personB]) {
+        const keypointA = $ui.poses[item.personA].keypoints.find(kp => kp.part == item.partA)
+        const keypointB = $ui.poses[item.personB].keypoints.find(kp => kp.part == item.partB)
         stroke("#00ffff");
         line(keypointA.position.x, keypointA.position.y, keypointB.position.x, keypointB.position.y);
         fill("#00ffff");
@@ -425,7 +358,7 @@ async function draw() {
 
 // A function to draw the skeletons
 function drawSkeleton() {
-  for (const pose of poses) {
+  for (const pose of $ui.poses) {
     // Loop through all the skeletons detected
     let skeleton = posenet.getAdjacentKeyPoints(pose.keypoints);
     // For every skeleton, loop through all body connections
@@ -444,13 +377,13 @@ function drawSkeleton() {
 
 // A function to draw ellipses over the detected keypoints
 function drawKeypoints() {
-  for (let i = 0; i < poses.length; i++) {
-    const pose = poses[i];
+  for (let i = 0; i < $ui.poses.length; i++) {
+    const pose = $ui.poses[i];
     for (const keypoint of pose.keypoints) {
       const { position, part } = keypoint
       const { x, y } = position;
       
-      const trackedItem = trackedItems.find(item => item.part == part && item.person == i)
+      const trackedItem = $ui.trackedItems.find(item => item.part == part && item.person == i)
       const mouseOver = dist(x, y, mouseX, mouseY) < jointRadius
       
       
@@ -472,7 +405,7 @@ function drawKeypoints() {
       }
       
       
-       if (mouseOver || (draggingFromKeypoint && draggingFromKeypoint.part == keypoint.part && i == draggingFromPerson)) {
+       if (mouseOver || ($ui.draggingFromKeypoint && $ui.draggingFromKeypoint.part == keypoint.part && i == $ui.draggingFromPerson)) {
           // if (trackedItem) {
           //     trackedItem.highlight = true;
           // } 
@@ -488,15 +421,15 @@ function drawKeypoints() {
 }
 
 function setMapping(itemI, minOrMax, property, value) {
-  trackedItems[itemI].mapping[property][minOrMax] = Number(value)
+  $ui.trackedItems[itemI].mapping[property][minOrMax] = Number(value)
 }
 
   
   
 function deleteTrackedItem(i) {
-  trackedItems.splice(i, 1)
+  $ui.trackedItems.splice(i, 1)
   $(`.tracked-item:nth-child(${i + 1})`).remove()
-  localStorage.setItem('trackedItems', JSON.stringify(trackedItems))
+  localStorage.setItem('trackedItems', JSON.stringify($ui.trackedItems))
 }
 
 
