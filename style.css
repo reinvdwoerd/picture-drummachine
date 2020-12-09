@@ -137,6 +137,7 @@ button, select {
 button {
   background: none;
   color: #ffffff;
+  margin-bottom: auto;
   border: 1px solid transparent;
   opacity: 0.6;
 }
@@ -229,7 +230,11 @@ button.play-pause {
 }
 
 .tracked-item .delete {
-  opacity: 0.1;
+  opacity: 0.4;
+  margin-left: auto;
+  /* align-self: flex-end; */
+  position: relative;
+  bottom: 3px;
 }
 
 .tracked-item:hover .delete {
@@ -251,6 +256,7 @@ input {
     display: grid;
     grid-template-columns: 40px auto;
     align-items: start;
+    justify-content: flex-start;
     /* margin-bottom: 5px; */
     /* margin-top: 10px; */
     /* grid-gap: 10px 10px; */
@@ -271,6 +277,10 @@ input {
 
 .tracked-item > div:nth-child(2) > div:not(.index) {
     grid-column: 2;
+    width: 100%;
+    display: grid;
+    /* align-items: flex-start; */
+    grid-template-columns: 100px 100px 200px 1fr auto;
 }
 
 .tracked-item .name {
@@ -278,3 +288,11 @@ input {
     margin-bottom: 5px;
     display: inline-flex;
 }
+
+.name-container {
+    border-bottom: 1px solid white;
+    margin-bottom: 8px;
+    display: flex;
+}
+
+button.test {}

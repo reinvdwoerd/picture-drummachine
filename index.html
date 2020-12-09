@@ -114,12 +114,22 @@
             v-if="item.type == 'relative'"
             class="tracked-item relative"
           >
-            <div>
-              <span class="name">PERSON {{item.personA}}
-                  <span class="sep">'s </span> 
+            <div class="name-container" v-if="item.personA == item.personB">
+              <span>PERSON {{item.personA}}<span class="sep">'s </span> 
                 {{item.partA}} 
-                <span class="sep"> - </span> 
-                PERSON {{item.personB}}<span>'s</span>
+                <span class="sep"> to </span> 
+                {{item.partB}}
+              </span>
+              <button class="delete" @click="deleteTrackedItem(i)">
+                x
+              </button>
+            </div>
+            
+            <div class="name-container" v-else>
+              <span>PERSON {{item.personA}}<span class="sep">'s </span> 
+                {{item.partA}} 
+                <span class="sep"> to </span> 
+                PERSON {{item.personB}}<span class="sep">'s</span>
                 {{item.partB}}
               </span>
               <button class="delete" @click="deleteTrackedItem(i)">
@@ -130,9 +140,13 @@
             <div>
               <div class="index">
                 {{i}}
+                <div class="index-channel">
+                  {{i}}
+                </div>
               </div>
               
               <div>
+                
                 <span class="sep">x: </span>
                 <span class="x">{{item.x}}</span>
                 <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
@@ -147,6 +161,9 @@
               
               <div class="index">
                 {{i + 1}}
+                <div class="index-channel">
+                  {{i}}
+                </div>
               </div>
 
               <div>
