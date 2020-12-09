@@ -1,22 +1,5 @@
 /* global Vue, strokeWeight, stroke, frameRate, posenet, createVideo, lerp, loadFont, textFont, textSize, createCanvas, fill, ellipse, image, line, width, height, WebMidi, noStroke, text, rect, dist, mouseX, mouseY, map */
-
-
 let video, net, currentMidiOutput, font;
-
-const $ = selector => document.querySelector(selector);
-
-const $playbackSpeed = $(".playback-speed");
-const $playbackSpeedLabel = $(".playback-speed-label span");
-const $positionSlider = $(".position");
-const $cachingProgress = $("#caching");
-
-const $midiOutputSelect = $(".midi select.outputs");
-const $joints = $(".midi .joints");
-
-const $currentTime = $(".current-time span");
-const $currentFrame = $(".current-frame span");
-const $poseData = $(".pose-data");
-
 
 
 const $ui = new Vue({
@@ -31,7 +14,6 @@ const $ui = new Vue({
     // Drag and drop connections
     draggingFromKeypoint: null,
     draggingFromPerson: null,
-    
     
     videoDuration: 1,
     currentTime: 0,
@@ -66,18 +48,48 @@ const $ui = new Vue({
     
     canvasMousePressed() {
       const result = $ui.searchIfOnAKeypoint()
-
+    
       if (result) {
-        $ui.draggingFromKeypoint = result[1]
-        $ui.draggingFromPerson = result[0]
-      } else {
-        // It's on the background
-        if (video.elt.paused) {
-          video.loop();
+        const [person, keypoint] = result
+        if (keypoint.part == $ui.draggingFromKeypoint.part && person == $ui.draggingFromPerson) {
+          $ui.trackedItems.push({
+            person,
+            part: keypoint.part,
+            highlight: false,
+            type: 'absolute', // or relative
+            velocity: 0, 
+            mapping: {
+              x: [0, 1],
+              y: [0, 1],
+              length: [0, 1],
+              velocity: [0, 1],
+            }
+          })
         } else {
-          video.pause();
+          $ui.trackedItems.push({
+            personA: $ui.draggingFromPerson,
+            personB: person,
+            partA: $ui.draggingFromKeypoint.part,
+            partB: keypoint.part,
+            highlight: false,
+            type: 'relative', // or relative
+            velocity: 0,
+            lastDistance: 0,
+            mapping: {
+              x: [0, 1],
+              y: [0, 1],
+              length: [0, 1],
+              velocity: [0, 1],
+            }
+          })
         }
+
+
+        localStorage.setItem('trackedItems', JSON.stringify($ui.trackedItems))
       }
+
+      $ui.draggingFromKeypoint = null
+      $ui.draggingFromPerson = null
     },
     
     canvasMouseReleased() {
@@ -115,6 +127,11 @@ const $ui = new Vue({
       video.time(e.target.value);
       if (!this.wasPaused) video.elt.play();
       this.draggingSlider = false;
+    },
+    
+    onMidiOutputChange() {
+      currentMidiOutput = WebMidi.getOutputByName($midiOutputSelect.value);
+      console.log("changed output to: ", currentMidiOutput.name);
     }
   }
 })
@@ -179,14 +196,6 @@ async function setup() {
 // DRAW ===========================================
 async function draw() {
   // THE UPDATING ---
-  const currentTime = $ui.draggingSlider
-    ? Number($positionSlider.value)
-    : video.elt.currentTime;
-  const currentFrame = Math.floor(currentTime * 29.97);
-  $currentTime.innerText = `${currentTime.toPrecision(
-    3
-  )} / ${video.elt.duration.toPrecision(3)}s`;
-  $currentFrame.innerText = currentFrame;
 
   if ($ui.draggingSlider) {
     image(video, 0, 0, width, height);
@@ -247,15 +256,6 @@ async function draw() {
               currentMidiOutput.sendControlChange(midiI, map(y, 0, 1, 0, 127), 2);
               currentMidiOutput.sendControlChange(midiI + 1, clamp(map(item.velocity, 0, 1, 0, 127), 0, 127), 3);
             }
-
-            $el.querySelector(`.x`).innerText = x.toPrecision(2);
-            $el.querySelector(`.y`).innerText = y.toPrecision(2);
-            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(2) * 50;
-            $el.classList.toggle('highlight', item.highlighted)
-          } else {
-              $joints.innerHTML += `
-                  
-              `;
           }
       }
     
@@ -286,15 +286,6 @@ async function draw() {
               currentMidiOutput.sendControlChange(midiI + 1, clamp(map(item.velocity, 0, 1, 0, 127), 0, 127), 1);
               currentMidiOutput.sendControlChange(midiI + 1, map(distanceNow, 0, 1, 0, 127), 2);
             }
-
-            $el.querySelector(`.x`).innerText = x.toPrecision(2);
-            $el.querySelector(`.y`).innerText = y.toPrecision(2);
-            $el.querySelector(`.velocity`).innerText = item.velocity.toPrecision(1);
-            $el.querySelector(`.length`).innerText = distanceNow.toPrecision(2);
-            $el.classList.toggle('highlight', item.highlighted)
-            
-            $el.querySelector(`.x`).innerText = x.toPrecision(2);
-            $el.querySelector(`.y`).innerText = y.toPrecision(2);
           }
     }
   }
@@ -403,10 +394,7 @@ function deleteTrackedItem(i) {
 //   );
 // };
 
-$midiOutputSelect.onchange = () => {
-  currentMidiOutput = WebMidi.getOutputByName($midiOutputSelect.value);
-  console.log("changed output to: ", currentMidiOutput.name);
-};
+
 
 function togglePlaying() {
   if (video.elt.paused) {
@@ -447,7 +435,7 @@ function dropHandler(ev) {
 
   // Load the new video and save the URL
   video.elt.src = URL.createObjectURL(ev.dataTransfer.files[0]);
-  $positionSlider.setAttribute("max", video.elt.duration);
+  $ui.videoDuration = video.elt.duration
   localStorage.setItem("videoSrc", video.elt.src);
 }
 

@@ -47,7 +47,7 @@
           </div>
 
           <code class="info">
-            <div class="current-time">time: {{currentTime}}</div>
+            <div class="current-time">time: {{currentTime.toPrecision(3)}} / {{videoDuration.toPrecision(3)}}s</div>
           </code>
 
           <button class="play-pause" onclick="togglePlaying()">pause</button>
@@ -59,7 +59,7 @@
           <div class="left"></div>
 
           <div class="right">
-            <select class="outputs">
+            <select class="outputs" @change="onMidiOutputChange">
               <option v-for="output in outputs">{{output.name}}</option>
             </select>
           </div>
