@@ -71,7 +71,7 @@
             class="tracked-item absolute"
           >
             <div @mouseenter="highlightedItem = item" @mouseleave="highlightedItem = null">
-              <span class="index">{{i}}</span>
+              <span class="index">{{i*2}}</span>
               <span class="name">PERSON {{item.person}}
                 <span class="sep">-</span> {{item.part}}</span>
               <button class="delete" @click="deleteTrackedItem(i)">
@@ -143,7 +143,7 @@
             <div>
                <div class="index-container"> 
                  <div class="index">
-                  {{i}}
+                  {{i* 2}}
                 </div>
                  <div class="index-channel">
                   1
@@ -172,7 +172,7 @@
               
               <div class="index-container"> 
                  <div class="index">
-                  {{i + 1}}
+                  {{i*2 + 1}}
                 </div>
                  <div class="index-channel">
                   1

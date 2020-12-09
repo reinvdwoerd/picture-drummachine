@@ -2,6 +2,26 @@
 let video, net, currentMidiOutput, font;
 
 
+Vue.component('double-range-slider', {
+  template: `
+    <div class="content">
+    <div id="my-slider" :se-min="minThreshold" :se-step="step" :se-min-value="min" :se-max-value="max" :se-max="maxThreshold" class="slider">
+      <div class="slider-touch-left">
+        <span></span>
+      </div>
+      <div class="slider-touch-right">
+        <span></span>
+      </div>
+      <div class="slider-line">
+        <span></span>
+      </div>
+    </div>
+  </div>
+
+  `
+})
+
+
 const $ui = new Vue({
   el: '#posemidi',
   data: {
@@ -216,12 +236,15 @@ async function draw() {
     // Video position
     if (!net || video.elt.readyState != 4) return;
     $ui.lastPoses = $ui.poses
-    $ui.poses = await net.estimateMultiplePoses(video.elt, {
-      flipHorizontal: false,
-      maxDetections: 2,
-      scoreThreshold: 0.75,
-      nmsRadius: 20
-    });
+    
+    if (!video.elt.paused) {
+      $ui.poses = await net.estimateMultiplePoses(video.elt, {
+        flipHorizontal: false,
+        maxDetections: 2,
+        scoreThreshold: 0.75,
+        nmsRadius: 20
+      });
+    }
   } catch (e) {
     console.log(e);
     return;
