@@ -116,12 +116,12 @@ const $ui = new Vue({
             partA: $ui.draggingFromKeypoint.part,
             partB: keypoint.part,
             highlight: false,
-            type: 'relative', // or relative
+            type: 'relative', 
             velocity: 0,
             lastDistance: 0,
             mapping: {
-              x: [0, 1],
-              y: [0, 1],
+              x: [-1, 1],
+              y: [-1, 1],
               length: [0, 1],
               velocity: [0, 1],
             },
@@ -304,16 +304,16 @@ async function draw() {
             const mappedValues = {
               x: map(x, mapping.x[0], mapping.x[1], 0, 1),
               y: map(y, mapping.y[0], mapping.y[1], 0, 1),
-              velocity: map(x, mapping.velocity[0], mapping.velocity[1], 0, 1),
+              velocity: map(item.velocity, mapping.velocity[0], mapping.velocity[1], 0, 1),
             }
             
             item.mappedValues= mappedValues
         
             if (currentMidiOutput && !video.elt.paused) {
               console.log('sent!!!')
-              currentMidiOutput.sendControlChange(midiI, map(mappedValues.x, 0, 1, 0, 127), 1);
-              currentMidiOutput.sendControlChange(midiI, map(mappedValues.y, 0, 1, 0, 127), 2);
-              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.velocity, 0, 1, 0, 127), 3);
+              currentMidiOutput.sendControlChange(midiI, map(mappedValues.x, 0, 1, 0, 127, true), 1);
+              currentMidiOutput.sendControlChange(midiI, map(mappedValues.y, 0, 1, 0, 127, true), 2);
+              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.velocity, 0, 1, 0, 127, true), 3);
             }
           }
       }
@@ -325,8 +325,8 @@ async function draw() {
           const keypointA = $ui.poses[item.personA].keypoints.find(kp => kp.part == item.partA)
           const keypointB = $ui.poses[item.personB].keypoints.find(kp => kp.part == item.partB)
 
-            const x = clamp((keypointA.position.x - keypointB.position.x) / video.width, -1, 1);
-            const y = clamp((keypointA.position.y - keypointB.position.y) / video.height, -1, 1);
+            const x = (keypointA.position.x - keypointB.position.x) / video.width
+            const y = (keypointA.position.y - keypointB.position.y) / video.height
                 
             item.x = x
             item.y = y
@@ -342,19 +342,19 @@ async function draw() {
             item.lastDistance = distanceNow
   
             const mappedValues = {
-              x: map(x, mapping.x[0], mapping.x[1], 0, 1),
-              y: map(x, mapping.x[0], mapping.x[1], 0, 1),
-              velocity: map(x, mapping.x[0], mapping.x[1], 0, 1),
-              length: map(x, mapping.x[0], mapping.x[1], 0, 1),
+              x: map(x, mapping.x[0], mapping.x[1], -1, 1),
+              y: map(y, mapping.y[0], mapping.y[1], -1, 1),
+              velocity: map(item.velocity, mapping.velocity[0], mapping.velocity[1], 0, 1),
+              length: map(item.lastDistance, mapping.length[0], mapping.length[1], 0, 1),
             }
             
             item.mappedValues = mappedValues
 
             if (currentMidiOutput && !video.elt.paused) {
-              currentMidiOutput.sendControlChange(midiI, map(mappedValues.x, -1, 1, 0, 127), 1);
-              currentMidiOutput.sendControlChange(midiI, map(mappedValues.y, -1, 1, 0, 127), 2);
-              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.velocity, 0, 1, 0, 127), 1);
-              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.length, 0, 1, 0, 127), 2);
+              currentMidiOutput.sendControlChange(midiI, map(mappedValues.x, -1, 1, 0, 127, true), 1);
+              currentMidiOutput.sendControlChange(midiI, map(mappedValues.y, -1, 1, 0, 127, true), 2);
+              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.velocity, 0, 1, 0, 127, true), 1);
+              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.length, 0, 1, 0, 127, true), 2);
             }
           }
     }
