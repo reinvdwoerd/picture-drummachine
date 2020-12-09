@@ -41,7 +41,6 @@ const $ui = new Vue({
   mounted() {
     // storage
     this.trackedItems = JSON.parse(localStorage.getItem('trackedItems')) || []
-  
   },
   
   methods: {
@@ -61,7 +60,19 @@ const $ui = new Vue({
     },
     
     canvasMousePressed() {
-      
+      const result = $ui.searchIfOnAKeypoint()
+
+      if (result) {
+        $ui.draggingFromKeypoint = result[1]
+        $ui.draggingFromPerson = result[0]
+      } else {
+        // It's on the background
+        if (video.elt.paused) {
+          video.loop();
+        } else {
+          video.pause();
+        }
+      }
     },
     
     canvasMouseReleased() {
@@ -87,6 +98,18 @@ const $ui = new Vue({
     
     onPositionDown() {
       this.wasPaused = video.elt.paused;
+    },
+    
+    onPositionInput(e) {
+      video.pause();
+      video.time(e.target.value);
+      this.draggingSlider = true;
+    },
+    
+    onPositionChange(e) {
+      video.time(e.target.value);
+      if (!this.wasPaused) video.elt.play();
+      this.draggingSlider = false;
     }
   }
 })
@@ -213,7 +236,6 @@ async function draw() {
           }
           
           
-          if ($el) {
             const x = clamp(keypoint.position.x / video.width, 0, 1);
             const y = clamp(keypoint.position.y / video.height, 0, 1);
 
@@ -234,7 +256,6 @@ async function draw() {
               `;
           }
       }
-    }
     
     
     if (item.type == 'relative') {
@@ -247,23 +268,15 @@ async function draw() {
             const x = clamp((keypointA.position.x - keypointB.position.x) / video.width, -1, 1);
             const y = clamp((keypointA.position.y - keypointB.position.y) / video.height, -1, 1);
             
-                const distanceNow = Math.sqrt(x * x + y * y)
+            const distanceNow = Math.sqrt(x * x + y * y)
           
-                if (isNaN(item.velocity)) item.velocity = 0
+            if (isNaN(item.velocity)) item.velocity = 0
         
             const change = distanceNow - item.lastDistance        
       
 
             item.velocity = Math.max(lerp(item.velocity, change, 0.4), 0.001)
-              
-                item.lastDistance = distanceNow
-
-            
-            
-          
-          
-          
-            
+            item.lastDistance = distanceNow
 
             if (currentMidiOutput && !video.elt.paused) {
               currentMidiOutput.sendControlChange(midiI, map(x, -1, 1, 0, 127), 1);
@@ -287,10 +300,6 @@ async function draw() {
               `;
           }
     }
-  
-      
-    
-  }
 
 
 
@@ -361,11 +370,7 @@ function drawKeypoints() {
         ellipse(x, y, jointRadius);
       }
       
-      
        if (mouseOver || ($ui.draggingFromKeypoint && $ui.draggingFromKeypoint.part == keypoint.part && i == $ui.draggingFromPerson)) {
-          // if (trackedItem) {
-          //     trackedItem.highlight = true;
-          // } 
           fill("black");
           noStroke()
           let bbox = font.textBounds(part, x, y, 30);
@@ -400,18 +405,6 @@ function deleteTrackedItem(i) {
 //   );
 // };
 
-$positionSlider.oninput = () => {
-  video.pause();
-  video.time($positionSlider.value);
-  draggingSlider = true;
-};
-
-$positionSlider.onchange = () => {
-  video.time($positionSlider.value);
-  if (!wasPaused) video.elt.play();
-  draggingSlider = false;
-};
-
 $midiOutputSelect.onchange = () => {
   currentMidiOutput = WebMidi.getOutputByName($midiOutputSelect.value);
   console.log("changed output to: ", currentMidiOutput.name);
@@ -433,7 +426,7 @@ function sendTest(i, j) {
 
 WebMidi.enable(err => {
   if (err) console.log(err);
-<option class="">${output.name}</option>
+  $ui.outputs = WebMidi.outputs
   currentMidiOutput = WebMidi.outputs[0];
 });
 

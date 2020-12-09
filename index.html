@@ -58,7 +58,9 @@
           <div class="left"></div>
 
           <div class="right">
-            <select class="outputs"></select>
+            <select class="outputs">
+              <option v-for="output in outputs">{{output.name}}</option>
+            </select>
           </div>
         </header>
 
