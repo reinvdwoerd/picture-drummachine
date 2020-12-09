@@ -232,7 +232,7 @@ async function setup() {
     video.loop();
   };
 
-  frameRate(30);
+  frameRate(50);
 }
 
 
