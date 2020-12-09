@@ -100,7 +100,7 @@ const $ui = new Vue({
               x: [0, 1],
               y: [0, 1],
               length: [0, 1],
-              velocity: [0, 1],
+              velocity: [0, .1],
             },
             mappedValues: {
               x: 0,
@@ -123,7 +123,7 @@ const $ui = new Vue({
               x: [-1, 1],
               y: [-1, 1],
               length: [0, 1],
-              velocity: [0, 1],
+              velocity: [0, .1],
             },
             mappedValues: {
               x: 0,
@@ -221,7 +221,7 @@ async function setup() {
   video.hide();
 
   net = await posenet.load({
-    // architecture: 'ResNet50',
+    architecture: 'ResNet50',
     inputResolution: { width: 640, height: 480 },
     quantBytes: 4
   });
@@ -288,9 +288,9 @@ async function draw() {
 
             const changeX = clamp((keypoint.position.x - lastKeypoint.position.x) / video.width, 0, 1) 
             const changeY = clamp((keypoint.position.y - lastKeypoint.position.y) / video.height, 0, 1)
-            const change = Math.abs(changeX + changeY) * 50
+            const change = Math.abs(changeX + changeY)
 
-            item.velocity = Math.max(lerp(item.velocity, change, 0.4), 0.001)
+            item.velocity = Math.max(lerp(item.velocity, change, 0.2), 0.001)
           }
           
             const x = clamp(keypoint.position.x / video.width, 0, 1);
@@ -311,7 +311,7 @@ async function draw() {
               console.log('sent!!!')
               currentMidiOutput.sendControlChange(midiI, mappedValues.x, 1);
               currentMidiOutput.sendControlChange(midiI, mappedValues.y, 2);
-              currentMidiOutput.sendControlChange(midiI + 1, mappedValues.velocity, 3);
+              currentMidiOutput.sendControlChange(midiI + 1, mappedValues.velocity, 1);
             }
           }
       }
@@ -336,7 +336,7 @@ async function draw() {
             const change = distanceNow - item.lastDistance        
       
 
-            item.velocity = Math.max(lerp(item.velocity, change, 0.4), 0.001)
+            item.velocity = Math.max(lerp(item.velocity, change, 0.2), 0.001)
             item.lastDistance = distanceNow
   
             const mappedValues = {
