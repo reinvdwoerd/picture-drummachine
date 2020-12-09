@@ -248,15 +248,15 @@ input {
 }
 
 .tracked-item > div:not(:first-child) {
-    /* display: grid; */
-    /* grid-template-columns: 1fr 1fr 1fr .5fr .5fr .5fr .5fr; */
-    align-items: center;
-    margin-bottom: 5px;
-    margin-top: 10px;
-    grid-gap: 10px 10px;
+    display: grid;
+    grid-template-columns: 40px auto;
+    align-items: start;
+    /* margin-bottom: 5px; */
+    /* margin-top: 10px; */
+    /* grid-gap: 10px 10px; */
 }
 
-span.index {
+.index {
     background: white;
     color: black;
     opacity: 1;
@@ -265,4 +265,16 @@ span.index {
     display: inline-flex;
     justify-content: center;
     align-items: center;
+}
+
+.tracked-item > div {}
+
+.tracked-item > div:nth-child(2) > div:not(.index) {
+    grid-column: 2;
+}
+
+.tracked-item .name {
+    border-bottom: 1px solid white;
+    margin-bottom: 5px;
+    display: inline-flex;
 }
