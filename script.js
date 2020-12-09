@@ -221,9 +221,11 @@ async function setup() {
   video.hide();
 
   net = await posenet.load({
-    architecture: 'ResNet50',
+    // architecture: 'ResNet50',
     inputResolution: { width: 640, height: 480 },
-    quantBytes: 4
+    quantBytes: 4,
+    multiplier: 1,
+    outputStride: 16
   });
 
   video.elt.onloadeddata = async () => {
