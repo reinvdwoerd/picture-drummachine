@@ -73,7 +73,7 @@
             @mouseleave="highlightedItem = null"
           >
             
-            <div class="name-container" v-if="item.personA == item.personB">
+            <div class="name-container" v-if="item.type == 'relative' && item.personA == item.personB">
               <span>PERSON {{item.personA}}<span class="sep">'s </span> 
                 {{item.partA}} 
                 <span class="sep"> to </span> 
@@ -97,8 +97,7 @@
             </div>
             
             <div class="name-container" v-else>
-              <span class="name">PERSON {{item.person}}
-              <span class="sep">-</span> {{item.part}}</span>
+              PERSON {{item.person}} <span class="sep"> - </span> {{item.part}}
               <button class="delete" @click="deleteTrackedItem(i)">
                 x
               </button>
@@ -117,7 +116,9 @@
               <div>
                 <span class="sep">x: </span>
                 <span class="x">{{item.x}}</span>
-                <input/>
+                <input min="0" max="1" :value="item.mapping.x[0]" @change="item.mapping.x[0] = Number($event.target.value)"/>
+                <input min="0" max="1" :value="item.mapping.x[1]" @change="item.mapping.x[1] = Number($event.target.value)"/>
+                <span>{{item.mappedValues.x.toPrecision(2)}}</span>
                 <button class="test" @click="sendTest(i * 2, 1)">test</button>
               </div>
               
@@ -130,7 +131,9 @@
               <div>
                 <span class="sep">y: </span>
                 <span class="y">{{item.y}}</span>
-                <input/>
+                <input min="0" max="1" :value="item.mapping.x[0]" @change="item.mapping.x[0] = Number($event.target.value)"/>
+                <input min="0" max="1" :value="item.mapping.x[1]" @change="item.mapping.x[1] = Number($event.target.value)"/>
+                <span>{{item.mappedValues.y.toPrecision(2)}}</span>
                 <button class="test" @click="sendTest(i * 2, 2)">test</button>
               </div>
               
@@ -146,7 +149,9 @@
               <div>
                 <span class="sep">velocity: </span>
                 <span class="velocity">{{item.velocity.toPrecision(2)}}</span>
-                <input/>
+                <input min="0" max="1" :value="item.mapping.x[0]" @change="item.mapping.x[0] = Number($event.target.value)"/>
+                <input min="0" max="1" :value="item.mapping.x[1]" @change="item.mapping.x[1] = Number($event.target.value)"/>
+                <span>{{item.mappedValues.y.toPrecision(2)}}</span>
                 <button class="test" @click="sendTest(i * 2 + 1, 1)">
                   test
                 </button>
@@ -162,7 +167,10 @@
                 <div>
                   <span class="sep">length: </span>
                   <span class="length">{{item.lastDistance.toPrecision(2)}}</span>
-                  <input/>
+                  <input min="0" max="1" :value="item.mapping.x[0]" @change="item.mapping.x[0] = Number($event.target.value)"/>
+                  <input min="0" max="1" :value="item.mapping.x[1]" @change="item.mapping.x[1] = Number($event.target.value)"/>
+                  
+
                   <button class="test" @click="sendTest(i * 2 + 1, 2)">
                     test
                   </button>

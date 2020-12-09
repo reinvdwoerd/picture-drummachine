@@ -280,11 +280,11 @@ input {
     width: 100%;
     display: grid;
     /* align-items: flex-start; */
-    grid-template-columns: 100px 100px auto 50px;
+    grid-template-columns: 100px 100px 40px 40px 100px auto;
 }
 
 .tracked-item .name {
-    border-bottom: 1px solid white;
+    /* border-bottom: 1px solid white; */
     margin-bottom: 5px;
     display: inline-flex;
 }
