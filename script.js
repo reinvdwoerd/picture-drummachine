@@ -18,6 +18,8 @@ const $ui = new Vue({
     videoDuration: 1,
     currentTime: 0,
     currentMidiOutput: null,
+    
+    highlightedItem: null,
 
     // Slider
     draggingSlider: false,
@@ -131,6 +133,11 @@ const $ui = new Vue({
     onMidiOutputChange(e) {
       this.currentMidiOutput = WebMidi.getOutputByName(e.target.value);
       console.log("changed output to: ", this.currentMidiOutput.name);
+    },
+    
+    deleteTrackedItem(i) {
+      $ui.trackedItems.splice(i, 1)
+      localStorage.setItem('trackedItems', JSON.stringify($ui.trackedItems))
     }
   }
 })
@@ -201,17 +208,20 @@ async function draw() {
     image(video, 0, 0, width, height);
     return;
   } 
+  
+  $ui.currentTime = video.elt.currentTime
+
 
   try {
     // Video position
     if (!net || video.elt.readyState != 4) return;
     $ui.lastPoses = $ui.poses
-    // $ui.poses = await net.estimateMultiplePoses(video.elt, {
-    //   flipHorizontal: false,
-    //   maxDetections: 2,
-    //   scoreThreshold: 0.75,
-    //   nmsRadius: 20
-    // });
+    $ui.poses = await net.estimateMultiplePoses(video.elt, {
+      flipHorizontal: false,
+      maxDetections: 2,
+      scoreThreshold: 0.75,
+      nmsRadius: 20
+    });
   } catch (e) {
     console.log(e);
     return;
@@ -379,14 +389,6 @@ function drawKeypoints() {
 function setMapping(itemI, minOrMax, property, value) {
   $ui.trackedItems[itemI].mapping[property][minOrMax] = Number(value)
 }
-
-  
-  
-function deleteTrackedItem(i) {
-  $ui.trackedItems.splice(i, 1)
-  localStorage.setItem('trackedItems', JSON.stringify($ui.trackedItems))
-}
-
 
 
 // INPUT =======================================
