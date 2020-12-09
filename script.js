@@ -56,6 +56,14 @@ const $ui = new Vue({
             }
         }
       }
+    },
+    
+    canvasMousePressed() {
+      
+    },
+    
+    canvasMouseReleased() {
+      
     }
   }
 })
@@ -78,12 +86,11 @@ async function setup() {
   
   
   canvas.mousePressed(() => {
-    const result = searchIfOnAKeypoint()
-    // console.log(result)
+    const result = $ui.searchIfOnAKeypoint()
 
     if (result) {
-      draggingFromKeypoint = result[1]
-      draggingFromPerson = result[0]
+      $ui.draggingFromKeypoint = result[1]
+      $ui.draggingFromPerson = result[0]
     } else {
       // It's on the background
       if (video.elt.paused) {
@@ -96,51 +103,7 @@ async function setup() {
   
   
   canvas.mouseReleased(() => {
-    const result = searchIfOnAKeypoint()
-    
-    // console.log(result)
-
-    if (result) {
-      const [person, keypoint] = result
-      if (keypoint.part == draggingFromKeypoint.part && person == draggingFromPerson) {
-        trackedItems.push({
-          person,
-          part: keypoint.part,
-          highlight: false,
-          type: 'absolute', // or relative
-          velocity: 0, 
-          mapping: {
-            x: [0, 1],
-            y: [0, 1],
-            length: [0, 1],
-            velocity: [0, 1],
-          }
-        })
-      } else {
-        trackedItems.push({
-          personA: draggingFromPerson,
-          personB: person,
-          partA: draggingFromKeypoint.part,
-          partB: keypoint.part,
-          highlight: false,
-          type: 'relative', // or relative
-          velocity: 0,
-          lastDistance: 0,
-          mapping: {
-            x: [0, 1],
-            y: [0, 1],
-            length: [0, 1],
-            velocity: [0, 1],
-          }
-        })
-      }
-      
-  
-      localStorage.setItem('trackedItems', JSON.stringify(trackedItems))
-    }
-    
-    draggingFromKeypoint = null
-    draggingFromPerson = null
+    $ui.c
   })
 
   // STYLE
