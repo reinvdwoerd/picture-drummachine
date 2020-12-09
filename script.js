@@ -101,6 +101,12 @@ const $ui = new Vue({
               y: [0, 1],
               length: [0, 1],
               velocity: [0, 1],
+            },
+            mappedValues: {
+              x: 0,
+              y: 0,
+              length: 0,
+              velocity: 0
             }
           })
         } else {
@@ -118,6 +124,12 @@ const $ui = new Vue({
               y: [0, 1],
               length: [0, 1],
               velocity: [0, 1],
+            },
+            mappedValues: {
+              x: 0,
+              y: 0,
+              length: 0,
+              velocity: 0
             }
           })
         }
@@ -265,7 +277,7 @@ async function draw() {
   // =================================================
   for (let i = 0; i < $ui.trackedItems.length; i++) {
     const item = $ui.trackedItems[i];
-    
+    const mapping = item.mapping
     const midiI = i * 2;
       
     if (item.type == 'absolute') {
@@ -286,14 +298,20 @@ async function draw() {
             const x = clamp(keypoint.position.x / video.width, 0, 1);
             const y = clamp(keypoint.position.y / video.height, 0, 1);
            
-            item.x = x.toPrecision(2)
-            item.y = y.toPrecision(2)
+            item.x = x
+            item.y = y
+        
+            const mappedValues = {
+              x: map(x, mapping.x[0], mapping.x[1], 0, 1),
+              y: map(y, mapping.y[0], mapping.y[1], 0, 1),
+              velocity: map(x, mapping.velocity[0], mapping.velocity[1], 0, 1),
+            }
         
             if (currentMidiOutput && !video.elt.paused) {
               console.log('sent!!!')
-              currentMidiOutput.sendControlChange(midiI, map(x, 0, 1, 0, 127), 1);
-              currentMidiOutput.sendControlChange(midiI, map(y, 0, 1, 0, 127), 2);
-              currentMidiOutput.sendControlChange(midiI + 1, clamp(map(item.velocity, 0, 1, 0, 127), 0, 127), 3);
+              currentMidiOutput.sendControlChange(midiI, map(mappedValues.x, 0, 1, 0, 127), 1);
+              currentMidiOutput.sendControlChange(midiI, map(mappedValues.y, 0, 1, 0, 127), 2);
+              currentMidiOutput.sendControlChange(midiI + 1, map(mappedValues.velocity, 0, 1, 0, 127), 3);
             }
           }
       }
@@ -304,13 +322,12 @@ async function draw() {
       if ($ui.poses[item.personA] && $ui.poses[item.personB]) {
           const keypointA = $ui.poses[item.personA].keypoints.find(kp => kp.part == item.partA)
           const keypointB = $ui.poses[item.personB].keypoints.find(kp => kp.part == item.partB)
-          // const distanceNow = dist(keypointA.position.x, keypointA.position.y, keypointB.position.x, keypointB.position.y)
 
             const x = clamp((keypointA.position.x - keypointB.position.x) / video.width, -1, 1);
             const y = clamp((keypointA.position.y - keypointB.position.y) / video.height, -1, 1);
                 
-            item.x = x.toPrecision(2)
-            item.y = y.toPrecision(2)
+            item.x = x
+            item.y = y
         
             const distanceNow = Math.sqrt(x * x + y * y)
           
@@ -321,6 +338,13 @@ async function draw() {
 
             item.velocity = Math.max(lerp(item.velocity, change, 0.4), 0.001)
             item.lastDistance = distanceNow
+  
+            const mappedValues = {
+              x: map(x, mapping.x[0], mapping.x[1], 0, 1),
+              y: map(x, mapping.x[0], mapping.x[1], 0, 1),
+              velocity: map(x, mapping.x[0], mapping.x[1], 0, 1),
+              length: map(x, mapping.x[0], mapping.x[1], 0, 1),
+            }
 
             if (currentMidiOutput && !video.elt.paused) {
               currentMidiOutput.sendControlChange(midiI, map(x, -1, 1, 0, 127), 1);

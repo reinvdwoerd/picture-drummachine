@@ -115,7 +115,7 @@
               
               <div>
                 <span class="sep">x: </span>
-                <span class="x">{{item.x}}</span>
+                <span class="x">{{item.x?.toPrecision(2)}}</span>
                 <input min="0" max="1" :value="item.mapping.x[0]" @change="item.mapping.x[0] = Number($event.target.value)"/>
                 <input min="0" max="1" :value="item.mapping.x[1]" @change="item.mapping.x[1] = Number($event.target.value)"/>
                 <span>{{item.mappedValues.x.toPrecision(2)}}</span>
@@ -130,7 +130,7 @@
               
               <div>
                 <span class="sep">y: </span>
-                <span class="y">{{item.y}}</span>
+                <span class="y">{{item.y?.toPrecision(2)}}</span>
                 <input min="0" max="1" :value="item.mapping.x[0]" @change="item.mapping.x[0] = Number($event.target.value)"/>
                 <input min="0" max="1" :value="item.mapping.x[1]" @change="item.mapping.x[1] = Number($event.target.value)"/>
                 <span>{{item.mappedValues.y.toPrecision(2)}}</span>
@@ -151,7 +151,7 @@
                 <span class="velocity">{{item.velocity.toPrecision(2)}}</span>
                 <input min="0" max="1" :value="item.mapping.x[0]" @change="item.mapping.x[0] = Number($event.target.value)"/>
                 <input min="0" max="1" :value="item.mapping.x[1]" @change="item.mapping.x[1] = Number($event.target.value)"/>
-                <span>{{item.mappedValues.y.toPrecision(2)}}</span>
+                <span>{{item.mappedValues.velocity.toPrecision(2)}}</span>
                 <button class="test" @click="sendTest(i * 2 + 1, 1)">
                   test
                 </button>
@@ -169,8 +169,7 @@
                   <span class="length">{{item.lastDistance.toPrecision(2)}}</span>
                   <input min="0" max="1" :value="item.mapping.x[0]" @change="item.mapping.x[0] = Number($event.target.value)"/>
                   <input min="0" max="1" :value="item.mapping.x[1]" @change="item.mapping.x[1] = Number($event.target.value)"/>
-                  
-
+                  <span>{{item.mappedValues.length.toPrecision(2)}}</span>
                   <button class="test" @click="sendTest(i * 2 + 1, 2)">
                     test
                   </button>
