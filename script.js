@@ -158,6 +158,10 @@ const $ui = new Vue({
     deleteTrackedItem(i) {
       $ui.trackedItems.splice(i, 1)
       localStorage.setItem('trackedItems', JSON.stringify($ui.trackedItems))
+    },
+    
+    sendTest(i, j) {
+      currentMidiOutput.sendControlChange(i, 127, j);
     }
   }
 })
@@ -436,9 +440,7 @@ function togglePlaying() {
 
 // MIDI ========================================
 // =============================================
-function sendTest(i, j) {
-  currentMidiOutput.sendControlChange(i, 127, j);
-}
+
 
 WebMidi.enable(err => {
   if (err) console.log(err);

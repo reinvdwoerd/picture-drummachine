@@ -65,58 +65,14 @@
           </div>
         </header>
 
-        <div class="joints">
-          <div v-for="(i, item) in trackedItems"
-            v-if="item.type == 'absolute'"
-            class="tracked-item absolute"
-          >
-            <div @mouseenter="highlightedItem = item" @mouseleave="highlightedItem = null">
-              <span class="index">{{i*2}}</span>
-              <span class="name">PERSON {{item.person}}
-                <span class="sep">-</span> {{item.part}}</span>
-              <button class="delete" @click="deleteTrackedItem(i)">
-                x
-              </button>
-            </div>
-
-            <div>
-              <div class="index">
-                {{i}}
-              </div>
-              
-              <div>
-                <span class="sep">x: </span>
-                <span class="x">{{item.x}}</span>
-                <input/>
-                <button class="test" onclick="sendTest(i * 2, 1)">test</button>
-              </div>
-              
-              <div>
-                <span class="sep">y: </span>
-                <span class="y">{{item.y}}</span>
-                <input/>
-                <button class="test" onclick="sendTest(i * 2, 2)">test</button>
-              </div>
-              
-              <div class="index">
-                {{i + 1}}
-              </div>
-
-              <div>
-                <span class="sep">velocity: </span>
-                <span class="velocity">{{item.velocity.toPrecision(2)}}</span>
-                <button class="test" onclick="sendTest(i * 2 + 1, 1)">
-                  test
-                </button>
-              </div>
-            </div>
-          </div>
-          
+        <div class="joints">      
           <div v-for="(item, i) in trackedItems"
-            v-if="item.type == 'relative'"
-            class="tracked-item relative"
+            class="tracked-item"
+            :class="item.type"
             @mouseenter="highlightedItem = item"
+            @mouseleave="highlightedItem = null"
           >
+            
             <div class="name-container" v-if="item.personA == item.personB">
               <span>PERSON {{item.personA}}<span class="sep">'s </span> 
                 {{item.partA}} 
@@ -128,13 +84,21 @@
               </button>
             </div>
             
-            <div class="name-container" v-else>
+            <div class="name-container" v-else-if="item.type == 'relative'">
               <span>PERSON {{item.personA}}<span class="sep">'s </span> 
                 {{item.partA}} 
                 <span class="sep"> to </span> 
                 PERSON {{item.personB}}<span class="sep">'s</span>
                 {{item.partB}}
               </span>
+              <button class="delete" @click="deleteTrackedItem(i)">
+                x
+              </button>
+            </div>
+            
+            <div class="name-container" v-else>
+              <span class="name">PERSON {{item.person}}
+              <span class="sep">-</span> {{item.part}}</span>
               <button class="delete" @click="deleteTrackedItem(i)">
                 x
               </button>
@@ -154,7 +118,7 @@
                 <span class="sep">x: </span>
                 <span class="x">{{item.x}}</span>
                 <input/>
-                <button class="test" onclick="sendTest(i * 2, 1)">test</button>
+                <button class="test" @click="sendTest(i * 2, 1)">test</button>
               </div>
               
               <div class="index-container"> 
@@ -167,7 +131,7 @@
                 <span class="sep">y: </span>
                 <span class="y">{{item.y}}</span>
                 <input/>
-                <button class="test" onclick="sendTest(i * 2, 2)">test</button>
+                <button class="test" @click="sendTest(i * 2, 2)">test</button>
               </div>
               
               <div class="index-container"> 
@@ -183,25 +147,27 @@
                 <span class="sep">velocity: </span>
                 <span class="velocity">{{item.velocity.toPrecision(2)}}</span>
                 <input/>
-                <button class="test" onclick="sendTest(i * 2 + 1, 1)">
+                <button class="test" @click="sendTest(i * 2 + 1, 1)">
                   test
                 </button>
               </div>
               
-              <div class="index-container"> 
-                 <div class="index-channel">
-                  2
+              <template v-if="item.type == 'relative'">
+                 <div class="index-container"> 
+                   <div class="index-channel">
+                    2
+                  </div>
                 </div>
-              </div>
-              
-              <div>
-                <span class="sep">length: </span>
-                <span class="length">{{item.lastDistance.toPrecision(2)}}</span>
-                <input/>
-                <button class="test" onclick="sendTest(i * 2 + 1, 2)">
-                  test
-                </button>
-              </div>
+
+                <div>
+                  <span class="sep">length: </span>
+                  <span class="length">{{item.lastDistance.toPrecision(2)}}</span>
+                  <input/>
+                  <button class="test" @click="sendTest(i * 2 + 1, 2)">
+                    test
+                  </button>
+                </div>
+              </template>
             </div>
           </div>
         </div>
