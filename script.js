@@ -1,4 +1,4 @@
-/* global Vue, strokeWeight, stroke, frameRate, posenet, createVideo, createCanvas, fill, ellipse, image, line, width, height, WebMidi, dist, mouseX, mouseY, map */
+/* global Vue, strokeWeight, stroke, frameRate, posenet, createVideo, lerp, loadFont, textFont, textSize, createCanvas, fill, ellipse, image, line, width, height, WebMidi, noStroke, text, rect, dist, mouseX, mouseY, map */
 
 
 let video, net, currentMidiOutput, font;
@@ -34,7 +34,8 @@ const $ui = new Vue({
     
     // Slider
     draggingSlider: false,
-    wasPaused: false
+    wasPaused: false,
+    playbackSpeed: 1
   },
   
   mounted() {
@@ -77,6 +78,15 @@ const $ui = new Vue({
           video.pause();
         }
       }
+    },
+    
+    onSpeedInput(e) {
+      this.playbackSpeed = e.target.value;
+      video.speed(e.target.value);
+    },
+    
+    onPositionDown() {
+      this.wasPaused = video.elt.paused;
     }
   }
 })
@@ -179,21 +189,21 @@ async function draw() {
     (a, b) => a.keypoints[0].position.x - b.keypoints[0].position.x
   );
 
+  
   // SEND MIDI AND UPDATE UI =========================
   // =================================================
-  for (let i = 0; i < trackedItems.length; i++) {
-    const item = trackedItems[i];
+  for (let i = 0; i < $ui.trackedItems.length; i++) {
+    const item = $ui.trackedItems[i];
     
     const midiI = i * 2;
       
     if (item.type == 'absolute') {
-      let $el = $(`.tracked-item[data-part="${item.part}"][data-person="${item.person}"]`);
       
-      if (poses[item.person]) {
-          const keypoint = poses[item.person].keypoints.find(kp => kp.part == item.part)
+      if ($ui.poses[item.person]) {
+          const keypoint = $ui.poses[item.person].keypoints.find(kp => kp.part == item.part)
           
-          if (lastPoses[item.person]) {
-            const lastKeypoint = lastPoses[item.person].keypoints.find(kp => kp.part == item.part)
+          if ($ui.lastPoses[item.person]) {
+            const lastKeypoint = $ui.lastPoses[item.person].keypoints.find(kp => kp.part == item.part)
 
             const changeX = clamp((keypoint.position.x - lastKeypoint.position.x) / video.width, 0, 1) 
             const changeY = clamp((keypoint.position.y - lastKeypoint.position.y) / video.height, 0, 1)
@@ -228,11 +238,10 @@ async function draw() {
     
     
     if (item.type == 'relative') {
-      let $el = $(`.tracked-item[data-part="${item.partA}-${item.partB}"]`);
       
-      if (poses[item.personA] && poses[item.personB]) {
-          const keypointA = poses[item.personA].keypoints.find(kp => kp.part == item.partA)
-          const keypointB = poses[item.personB].keypoints.find(kp => kp.part == item.partB)
+      if ($ui.poses[item.personA] && $ui.poses[item.personB]) {
+          const keypointA = $ui.poses[item.personA].keypoints.find(kp => kp.part == item.partA)
+          const keypointB = $ui.poses[item.personB].keypoints.find(kp => kp.part == item.partB)
           // const distanceNow = dist(keypointA.position.x, keypointA.position.y, keypointB.position.x, keypointB.position.y)
 
             const x = clamp((keypointA.position.x - keypointB.position.x) / video.width, -1, 1);
@@ -254,7 +263,6 @@ async function draw() {
           
           
           
-          if ($el) {
             
 
             if (currentMidiOutput && !video.elt.paused) {
@@ -275,55 +283,9 @@ async function draw() {
           } else {
               let secondperson = item.personA == item.personB ? '' : `PERSON ${item.personB}<span class="sep">'s</span>` 
               $joints.innerHTML += `
-                  <div class="tracked-item relative" data-part="${item.partA}-${item.partB}" data-person="${item.personA}-${item.personB}">
-                    <div>
-                      <span class="index">${i}</span>
-                      <span class="name">PERSON ${item.personA}<span class="sep">'s</span> ${item.partA} <span class="sep">to</span> ${secondperson} ${item.partB}</span>
-                      <button class="delete" onclick="deleteTrackedItem(${i})">x</button>
-                    </div>
-
-                    <div>
-                      <span class="sep">x: </span>
-                      <span class="x"></span>
-                      <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
-                      <span class="sep">min: </span>
-                      <input onchange="setMapping(${i}, 0, 'x', this.value)"/>
-                      <span class="sep">max: </span>
-                      <input onchange="setMapping(${i}, 1, 'x', this.value)"/>
-                    </div>
-                    <div>
-                      <span class="sep">y: </span>
-                      <span class="y"></span>
-                      <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
-                      <span class="sep">min: </span>
-                      <input onchange="setMapping(${i}, 0, 'y', this.value})"/>
-                      <span class="sep">max: </span>
-                      <input onchange="setMapping(${i}, 1, 'y', this.value})"/>
-                                          </div>
-
-                    <div>
-                      <span class="sep">velocity: </span>
-                      <span class="velocity"></span>
-                      <button class="test" onclick="sendTest(${midiI + 1}, 1)">test</button>
-                      <span class="sep">min: </span>
-                      <input onchange="setMapping(${i}, 0, 'velocity', this.value)"/>
-                      <span class="sep">max: </span>
-                      <input onchange="setMapping(${i}, 1, 'velocity', this.value)"/>
-                                          </div>
-
-                    <div>
-                      <span class="sep">length: </span>
-                      <span class="length"></span>
-                      <button class="test" onclick="sendTest(${midiI + 1}, 2)">test</button>
-                      <span class="sep">min: </span>
-                      <input onchange="setMapping(${i}, 0, 'length', this.value)"/>
-                      <span class="sep">max: </span>
-                      <input onchange="setMapping(${i}, 1, 'length', this.value)"/>
-                   </div>
-                 </div>
+                  <
               `;
           }
-        }
     }
   
       
@@ -393,12 +355,7 @@ function drawKeypoints() {
         ellipse(x, y, jointRadius + 10);
 
         fill("black");
-        // stroke("white");
       } else {
-        // if (trackedItem) {
-        //   trackedItem.highlight = false;
-        // }
-        
         fill("white");
         stroke("black");
         ellipse(x, y, jointRadius);
@@ -428,7 +385,6 @@ function setMapping(itemI, minOrMax, property, value) {
   
 function deleteTrackedItem(i) {
   $ui.trackedItems.splice(i, 1)
-  $(`.tracked-item:nth-child(${i + 1})`).remove()
   localStorage.setItem('trackedItems', JSON.stringify($ui.trackedItems))
 }
 
@@ -443,15 +399,6 @@ function deleteTrackedItem(i) {
 //     0.1
 //   );
 // };
-
-$playbackSpeed.oninput = () => {
-  video.speed($playbackSpeed.value);
-  $playbackSpeedLabel.innerText = $playbackSpeed.value;
-};
-
-$positionSlider.onmousedown = () => {
-  wasPaused = video.elt.paused;
-};
 
 $positionSlider.oninput = () => {
   video.pause();
@@ -486,14 +433,7 @@ function sendTest(i, j) {
 
 WebMidi.enable(err => {
   if (err) console.log(err);
-
-  // Add the list of outputs
-  for (const output of WebMidi.outputs) {
-    $midiOutputSelect.innerHTML += `
-      <option class="">${output.name}</option>
-    `;
-  }
-
+<option class="">${output.name}</option>
   currentMidiOutput = WebMidi.outputs[0];
 });
 

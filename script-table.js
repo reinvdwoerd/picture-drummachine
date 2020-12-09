@@ -3,10 +3,6 @@ let video, net, currentMidiOutput;
 
 const $ = selector => document.querySelector(selector);
 
-const $playbackSpeed = $(".playback-speed");
-const $playbackSpeedLabel = $(".playback-speed-label span");
-const $positionSlider = $(".position");
-const $cachingProgress = $("#caching");
 
 const $midiOutputSelect = $(".midi select.outputs");
 const $joints = $(".midi .joints");

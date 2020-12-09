@@ -37,17 +37,16 @@
                 type="range"
                 min="0.125"
                 max="4"
-                value="1"
+                :value="playbackSpeed"
+                @input="onSpeedInput"
                 step="0.125"
               />
-              <span>1</span>x
+              <span>{{playbackSpeed}}</span>x
             </label>
           </div>
 
           <code class="info">
-            <div class="current-time">time: <span></span></div>
-            <div class="current-frame">frame: <span></span></div>
-            <div class="pose-data"></div>
+            <div class="current-time">time: {{currentTime}}</div>
           </code>
 
           <button class="play-pause" onclick="togglePlaying()">pause</button>
@@ -65,16 +64,50 @@
 
         <div class="joints">
           <div v-for="(item, i) in trackedItems"
+            v-if="item.type == 'absolute'"
             class="tracked-item absolute"
-            data-part="${item.part}"
-            data-person="${item.person}"
+            :data-part="item.part"
+            :data-person="item.person"
           >
             <div>
               <span class="index">{{i}}</span>
-              <span class="name"
-                >PERSON {{item.person}}
-                <span class="sep">-</span> {{item.part}}</span
-              >
+              <span class="name">PERSON {{item.person}}
+                <span class="sep">-</span> {{item.part}}</span>
+              <button class="delete" @click="deleteTrackedItem(i)">
+                x
+              </button>
+            </div>
+
+            <div>
+<!--               <span class="sep">x: </span>
+              <span class="x"></span>
+              <span class="x"></span>
+              <button class="test" onclick="sendTest(${midiI}, 1)">test</button>
+
+              <br />
+              <span class="sep">y: </span>
+              <span class="y"></span>
+              <button class="test" onclick="sendTest(${midiI}, 2)">test</button>
+
+              <br />
+              <span class="sep">velocity: </span>
+              <span class="velocity"></span>
+              <button class="test" onclick="sendTest(${midiI + 1}, 3)">
+                test
+              </button> -->
+            </div>
+          </div>
+          
+          <div v-for="(item, i) in trackedItems"
+            v-if="item.type == 'relative'"
+            class="tracked-item relative"
+            :data-part="item.part"
+            :data-person="item.person"
+          >
+            <div>
+              <span class="index">{{i}}</span>
+              <span class="name">PERSON {{item.person}}
+                <span class="sep">-</span> {{item.part}}</span>
               <button class="delete" @click="deleteTrackedItem(i)">
                 x
               </button>
