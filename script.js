@@ -2,11 +2,6 @@ let currentMidiInput
 let images = {}
 
 
-// Constants
-const jointRadius = 20;
-const textBoxPadding = 5;
-
-
 
 async function setup() {
   // canvas
@@ -24,21 +19,26 @@ const $ui = new Vue({
     pads: []
   },
   
-  mounted() {
-    let restored = localStorage.getItem('pads')
-    if (restored) {
-       this.pads = JSON.parse(restored) 
-    } else {
+  async mounted() {
+    // let restored = localStorage.getItem('pads')
+    // if (restored) {
+    //    this.pads = JSON.parse(restored) 
+    // } else {
       for (let i = 0; i < 24; i++) {
-        this.pads.push(null)
+        let restored = await idbKeyval.get(`image-${i}`);
+        this.pads.push(restored)
+        console.log(restored)
+        if (restored) {
+          images[i] = loadImage(this.pads[i])
+        }
       }  
-    }
+    // }
     
-    setTimeout(() => {
-      for (let i = 0; i < this.pads.length; i++) {
-        images[i] = loadImage(this.pads[i])
-      }  
-    }, 1000)
+    // setTimeout(() => {
+    //   for (let i = 0; i < this.pads.length; i++) {
+    //     images[i] = loadImage(this.pads[i])
+    //   }  
+    // }, 1000)
   },
   
   methods: {
@@ -54,39 +54,29 @@ const $ui = new Vue({
     
     dropHandler(i, ev) {
       console.log("File(s) dropped");
-    
-      // Prevent default behavior (Prevent file from being opened)
       ev.preventDefault();
     
       console.log(ev.dataTransfer.files);
       let url = URL.createObjectURL(ev.dataTransfer.files[0]);
       
       var reader = new FileReader();
-      reader.onloadend = () =>{
+      reader.onloadend = async () =>{
         console.log('RESULT', reader.result)
         this.pads[i] = reader.result
         images[i] = loadImage(reader.result)
-        // localStorage.setItem("pads", JSON.stringify(this.pads));
+        idbKeyval.set(`image-${i}`, reader.result);
+
+        localStorage.setItem("pads", JSON.stringify(this.pads));
 
         this.$forceUpdate()
 
       }
+
       reader.readAsDataURL(ev.dataTransfer.files[0]);
-    
-      // Load the new video and save the URL
-      // video.elt.src = URL.createObjectURL(ev.dataTransfer.files[0]);
-
-
-      
-      // images[url] = loadImage(url)
-
-      // $ui.videoDuration = video.elt.duration
-      // localStorage.setItem("videoSrc", video.elt.src);
     },
     
     dragOverHandler(i, ev) {
       console.log("File(s) in drop zone");
-      // Prevent default behavior (Prevent file from being opened)
       ev.preventDefault();
     },
     
@@ -95,7 +85,6 @@ const $ui = new Vue({
         images[i] = loadImage(this.pads[i])
       }
       image(images[i], images[i].width < 1920 ? random(1920) : 0, images[i].width < 1920 ? random(1080) : 0)
-      // rect(20,20,50,50)
     }
   }
 })
