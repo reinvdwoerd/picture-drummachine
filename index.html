@@ -14,172 +14,22 @@
     <script src="https://cdn.jsdelivr.net/npm/webmidi"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/posenet"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
-
     <script src="/script.js" defer></script>
   </head>
   <body>
     <div id="posemidi">
-      <main
-        id="main"
-        ondrop="dropHandler(event);"
-        ondragover="dragOverHandler(event);"
-      >
-        <div class="playback-controls">
-          <input class="position" type="range" min="0" :max="videoDuration" step="any" :value="currentTime" 
-                 @input="onPositionInput" @change="onPositionChange" @mousedown="onPositionDown" />
-          <div class="playback-speed-container">
-            <label class="playback-speed-label">
-              speed:
-              <input
-                class="playback-speed"
-                type="range"
-                min="0.125"
-                max="4"
-                :value="playbackSpeed"
-                @input="onSpeedInput"
-                step="0.125"
-              />
-              <span>{{playbackSpeed}}</span>x
-            </label>
-          </div>
-
-          <code class="info">
-            <div class="current-time">time: {{currentTime.toPrecision(3)}} / {{videoDuration.toPrecision(3)}}s</div>
-          </code>
-
-          <button class="play-pause" onclick="togglePlaying()">pause</button>
-        </div>
+      <main id="main">
       </main>
 
-      <div class="midi">
-        <header>
-          <div class="left"></div>
-
-          <div class="right">
-            <select class="outputs" @change="onMidiOutputChange">
-              <option v-for="output in outputs">{{output.name}}</option>
-            </select>
-          </div>
-        </header>
-
-        <div class="joints">      
-          <div v-for="(item, i) in trackedItems"
-            class="tracked-item"
-            :class="item.type"
-            @mouseenter="highlightedItem = item"
-            @mouseleave="highlightedItem = null"
-          >
-            
-            <div class="name-container" v-if="item.type == 'relative' && item.personA == item.personB">
-              <span>PERSON {{item.personA}}<span class="sep">'s </span> 
-                {{item.partA}} 
-                <span class="sep"> to </span> 
-                {{item.partB}}
-              </span>
-              <button class="delete" @click="deleteTrackedItem(i)">
-                x
-              </button>
-            </div>
-            
-            <div class="name-container" v-else-if="item.type == 'relative'">
-              <span>PERSON {{item.personA}}<span class="sep">'s </span> 
-                {{item.partA}} 
-                <span class="sep"> to </span> 
-                PERSON {{item.personB}}<span class="sep">'s</span>
-                {{item.partB}}
-              </span>
-              <button class="delete" @click="deleteTrackedItem(i)">
-                x
-              </button>
-            </div>
-            
-            <div class="name-container" v-else>
-              PERSON {{item.person}} <span class="sep"> - </span> {{item.part}}
-              <button class="delete" @click="deleteTrackedItem(i)">
-                x
-              </button>
-            </div>
-
-            <div>
-               <div class="index-container"> 
-                 <div class="index">
-                  {{i* 2}}
-                </div>
-                 <div class="index-channel">
-                  1
-                </div>
-              </div>
-              
-              <div>
-                <span class="sep">x: </span>
-                <span class="x">{{item.x?.toPrecision(2)}}</span>
-                <input min="0" max="1" value="0" @input="item.mapping.x[0] = Number($event.target.value)"/>
-                <input min="0" max="1" value="1" @input="item.mapping.x[1] = Number($event.target.value)"/>
-                <span>{{item.mappedValues.x.toPrecision(2)}}</span>
-                <progress :value="item.mappedValues.x" min="0" max="127"></progress>
-                <button class="test" @click="sendTest(i * 2, 1)">test</button>
-              </div>
-              
-              <div class="index-container"> 
-                 <div class="index-channel">
-                  2
-                </div>
-              </div>
-              
-              <div>
-                <span class="sep">y: </span>
-                <span class="y">{{item.y?.toPrecision(2)}}</span>
-                <input min="0" max="1" value="0" @input="item.mapping.y[0] = Number($event.target.value)"/>
-                <input min="0" max="1" value="1" @input="item.mapping.y[1] = Number($event.target.value)"/>
-                <span>{{item.mappedValues.y.toPrecision(2)}}</span>
-                <progress :value="item.mappedValues.y" min="0" max="127"></progress>
-                <button class="test" @click="sendTest(i * 2, 2)">test</button>
-              </div>
-              
-              <div class="index-container"> 
-                 <div class="index">
-                  {{i*2 + 1}}
-                </div>
-                 <div class="index-channel">
-                  1
-                </div>
-              </div>
-             
-              <div>
-                <span class="sep">velocity: </span>
-                <span class="velocity">{{item.velocity.toPrecision(2)}}</span>
-                <input min="0" max="1" value="0" @input="item.mapping.velocity[0] = Number($event.target.value)"/>
-                <input min="0" max="1" value="1" @input="item.mapping.velocity[1] = Number($event.target.value)"/>
-                <span>{{item.mappedValues.velocity.toPrecision(2)}}</span>
-                <progress :value="item.mappedValues.velocity" min="0" max="127"></progress>
-                <button class="test" @click="sendTest(i * 2 + 1, 1)">
-                  test
-                </button>
-              </div>
-              
-              <template v-if="item.type == 'relative'">
-                 <div class="index-container"> 
-                   <div class="index-channel">
-                    2
-                  </div>
-                </div>
-
-                <div>
-                  <span class="sep">length: </span>
-                  <span class="length">{{item.lastDistance.toPrecision(2)}}</span>
-                  <input min="0" max="1" value="0" @input="item.mapping.length[0] = Number($event.target.value)"/>
-                  <input min="0" max="1" value="1" @input="item.mapping.length[1] = Number($event.target.value)"/>
-                  <span>{{item.mappedValues.length.toPrecision(2)}}</span>
-                  <progress :value="item.mappedValues.length" min="0" max="127"></progress>
-                  <button class="test" @click="sendTest(i * 2 + 1, 2)">
-                    test
-                  </button>
-                </div>
-              </template>
-            </div>
+      <div class="ui">
+        <select class="inputs" @change="onMidiInputChange">
+          <option v-for="input in inputs">{{input.name}}</option>
+        </select>
+        
+        <div class="pads">
+          <div class="pad" v-for="(pad, i) of pads"  @drop="dropHandler(i, $event)"    @dragover="dragOverHandler(i, $event)" @click="triggerPad(i)">
+            <img v-if="pad" :src="pad"/>
           </div>
         </div>
       </div>

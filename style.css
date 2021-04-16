@@ -1,27 +1,18 @@
 * {
     font-family: monospace;
+    box-sizing: border-box;
 }
 
 body {
   height: 100vh;
   position: absolute;
-  align-items: c;
   margin: 0;
-  background: #000000;
-  color: white;
   width: 100%;
   top: 0;
 }
 
 #posemidi {
   display: contents;
-}
-
-
-.playback-speed-container {
-  display: flex;
-  margin-bottom: 10px;
-  flex-direction: column;
 }
 
 canvas {
@@ -35,12 +26,13 @@ canvas:hover {
 }
 
 main {
-  display: flex;
+  /* display: flex; */
   /* padding: 50px; */
+  width: 100%;
   top: 0;
-  position: sticky;
-  flex-direction: column;
-  transition: opacity 0.2s;
+  /* position: sticky; */
+  /* flex-direction: column; */
+  /* transition: opacity 0.2s; */
 }
 
 main.half-transparent {
@@ -65,50 +57,9 @@ main.half-transparent {
   transition: opacity .1s;
 }
 
-.current-frame {
-  display: none;
-}
-
-.joints {
-    display: grid;
-}
-
-.joint {
-  margin-top: 5px;
-  padding-top: 5px;
-  grid-column: 1;
-  border-top: 1px solid #ffffff3d;
-  display: grid;
-  grid-template-columns: 30px 100px 30px 100px repeat(4, 1fr);
-}
-
-.joint .name {
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.joint .name .index {
-  opacity: 0.6;
-}
-
-.joint .grid {
-  display: grid;
-  grid-template-columns: auto auto;
-  margin-bottom: 5px;
-  grid-gap: 0 20px;
-  align-items: center;
-}
 
 
-  .joints {
-    /* grid-template-columns: 1fr 1fr; */
-    grid-gap: 30px 30px;
-  }
-
-
-
-
-
+/* 
 @media(min-width: 1200px) {
   body {
     display: grid;
@@ -125,18 +76,15 @@ main.half-transparent {
     margin-top: 0;
     padding-right: 50px;
   }
-}
+} */
 
 
 button, select {
   background: none;
-  color: #ffffff;
-  border: 1px solid #ffffff85;
 }
 
 button {
   background: none;
-  color: #ffffff;
   margin-bottom: auto;
   border: 1px solid transparent;
   opacity: 0.6;
@@ -182,15 +130,7 @@ header {
   margin-bottom: 20px;
 }
 
-label.playback-speed-label {
-    display: flex;
-    align-items: center;
-}
 
-input.position {
-    max-width: 100%;
-    width: 100%;
-}
 
 /* body:not(:hover) .midi {
   opacity: 0.5;
@@ -202,112 +142,36 @@ input.position {
     align-items: center;
 }
 
-button.play-pause {
-    height: min-content;
-    margin-right: 15px;
-    border-radius: 0;
-    opacity: 1;
-    display: none;
+.ui {  
+  padding: 15px;
+  grid-gap: 15px;
+  display: grid;
 }
 
 
-.playback-controls {
-  order: 2;
-  padding: 50px;
-  padding-bottom: 0;
+.pads {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 15px;
+  width: 100%;
 }
 
-.sep, .index {
-  opacity: 0.5;
+.pad {
+  border: 1px solid  #9f9f9f;
+  height: 10vh;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
-.pose > .name > span:not(:first-child) {
-    text-align: end;
+.pad img {
+  object-fit: contain;
+  object-position: center center;
+  max-width: 100%;
+
 }
 
-.joint > .rel-x, .rel-y, .abs-x, .abs-y {
-    text-align: end;
-}
-
-.tracked-item .delete {
-  opacity: 0.4;
-  margin-left: auto;
-  /* align-self: flex-end; */
-  position: relative;
-  bottom: 3px;
-}
-
-.tracked-item:hover .delete {
-  opacity: .6;
-}
-
-.tracked-item:hover .delete:hover {
-  opacity: 1;
-}
-
-input {
-  background: none;
-  color: white;
-  border: 1px solid #ffffff42;
-  width: 30px;
-}
-
-.tracked-item > div:not(:first-child) {
-    display: grid;
-    grid-template-columns: 45px auto;
-    align-items: start;
-    /* justify-content: flex-start; */
-    /* margin-bottom: 5px; */
-    /* margin-top: 10px; */
-    grid-gap: 0px 10px;
-}
-
-.index, .index-channel {
-    background: white;
-    color: black;
-    opacity: 1;
-    width: 20px;
-    height: 20px;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.tracked-item > div {}
-
-.tracked-item > div:nth-child(2) > div:not(.index-container) {
-    grid-column: 2;
-    width: 100%;
-    display: grid;
-    align-items: center;
-    grid-template-columns: 90px 40px 40px 40px 60px 100px 50px;
-    grid-gap: 0 10px;
-    /* justify-content: center; */
-}
-
-.tracked-item .name {
-    /* border-bottom: 1px solid white; */
-    margin-bottom: 5px;
-    display: inline-flex;
-}
-
-.name-container {
-    border-bottom: 1px solid white;
-    margin-bottom: 8px;
-    display: flex;
-}
-
-button.test {}
-
-.index-channel {
-    background: #ffffff30;
-    color: white;
-    /* border: 1px solid white; */
-    /* margin-left: auto; */
-    grid-column: 2;
-}
-
-.index-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+.pad:hover {
+  background: #eee;
 }
