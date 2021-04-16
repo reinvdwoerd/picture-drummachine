@@ -12,13 +12,17 @@ body {
 }
 
 #posemidi {
-  display: contents;
+  display: grid;
+  height: 100vh;
+  grid-template-columns: max-content auto;;
 }
 
 canvas {
-  margin: 0 auto;
-  width: 100% !important;
-  height: unset !important;
+  margin: auto;
+  height: 400px !important;
+  /* width: 100% !important; */
+  width: unset !important;
+  /* height: unset !important; */
 }
 
 canvas:hover {
@@ -27,8 +31,10 @@ canvas:hover {
 
 main {
   /* display: flex; */
+  flex-direction: column;
   /* padding: 50px; */
   width: 100%;
+  /* height: 500px; */
   top: 0;
   /* position: sticky; */
   /* flex-direction: column; */
@@ -151,25 +157,28 @@ header {
 
 .pads {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   grid-gap: 15px;
   width: 100%;
 }
 
 .pad {
   border: 1px solid  #9f9f9f;
-  height: 10vh;
+  height: 200px;
   padding: 10px;
-  display: flex;
+  display: grid;
   justify-content: center;
   width: 100%;
+  align-items: center;
+  flex-direction: column;;
+  grid-template-rows: 130px 70px;
+  padding-top: 20px;
 }
 
 .pad img {
   object-fit: contain;
   object-position: center center;
   max-width: 100%;
-
 }
 
 .pad:hover {
@@ -182,6 +191,10 @@ header {
 
 .pad:not(.just-triggered) {
   transition: background .25s;
+}
+
+.pad .note {
+  text-align: center;
 }
 
 canvas:hover {
@@ -200,4 +213,8 @@ canvas:hover {
 
 .pad {
   user-select: none;
+}
+
+select.inputs {
+  order: 2;
 }

@@ -4,7 +4,7 @@ let popup = {}
 
 let WIDTH = screen.width
 let HEIGHT = screen.height
-let NUMPADS = 56
+let NUMPADS = 127
 
 async function setup() {
   // canvas

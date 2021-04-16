@@ -12,19 +12,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@5/dist/iife/index-min.js"></script>
-    <script src="./note-parser.js"></script>
     <script src="/script.js" defer></script>
   </head>
 
   <body>
     <div id="posemidi">
       <main id="main">
-      </main>
-
-      <div class="ui">
         <select class="inputs" @change="onMidiInputChange">
           <option v-for="input in inputs">{{input.name}}</option>
         </select>
+      </main>
+
+      <div class="ui">
+        
         
         <div class="pads">
           <div class="pad" 
@@ -34,8 +34,10 @@
             @dragover="dragOverHandler(i, $event)" 
             @pointerdown="padPressed(i)"
             @pointerup="padReleased(i)">
+
             <img v-if="pad.image" :src="pad.image"/>
-            {{getNoteNameAndOctave(i)}}
+            <div v-else></div>
+            <span class="note">{{getNoteNameAndOctave(i)}}</span>
           </div>
         </div>
       </div>
