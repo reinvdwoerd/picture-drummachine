@@ -1,15 +1,21 @@
 let currentMidiInput
 let images = {}
+let popup = {}
 
-
+let WIDTH = screen.width
+let HEIGHT = screen.height
 
 async function setup() {
   // canvas
-  let canvas = createCanvas(1920, 1080);
+  let canvas = createCanvas(WIDTH, HEIGHT);
   canvas.parent("main")
   background(0)
   noLoop()
 
+  canvas.elt.onclick = () => {
+	popup = window.open("./popup.html", "hello", `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,
+	width=${WIDTH},height=${HEIGHT},left=100,top=100,fullscreen=yes`);
+  }
 }
 
 const $ui = new Vue({
@@ -27,7 +33,6 @@ const $ui = new Vue({
       for (let i = 0; i < 24; i++) {
         let restored = await idbKeyval.get(`image-${i}`);
         this.pads.push(restored)
-        console.log(restored)
         if (restored) {
           images[i] = loadImage(this.pads[i])
         }
@@ -57,19 +62,16 @@ const $ui = new Vue({
       ev.preventDefault();
     
       console.log(ev.dataTransfer.files);
-      let url = URL.createObjectURL(ev.dataTransfer.files[0]);
       
       var reader = new FileReader();
       reader.onloadend = async () =>{
         console.log('RESULT', reader.result)
         this.pads[i] = reader.result
         images[i] = loadImage(reader.result)
+
+
         idbKeyval.set(`image-${i}`, reader.result);
-
-        localStorage.setItem("pads", JSON.stringify(this.pads));
-
         this.$forceUpdate()
-
       }
 
       reader.readAsDataURL(ev.dataTransfer.files[0]);
@@ -81,11 +83,16 @@ const $ui = new Vue({
     },
     
     triggerPad(i) {
-      if (!images[i]) {
-        images[i] = loadImage(this.pads[i])
-      }
-      image(images[i], images[i].width < 1920 ? random(1920) : 0, images[i].width < 1920 ? random(1080) : 0)
-    }
+		let x = images[i].width < WIDTH ? random(WIDTH) : 0
+		let y = images[i].width < WIDTH ? random(HEIGHT) : 0
+		image(images[i], x, y)
+
+		if (popup) {
+			popup.eval(`
+				image(images[${i}], ${x}, ${y});
+			`)
+		}
+	}
   }
 })
 
