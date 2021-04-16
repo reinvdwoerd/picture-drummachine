@@ -4,6 +4,7 @@ let popup = {}
 
 let WIDTH = screen.width
 let HEIGHT = screen.height
+let NUMPADS = 56
 
 async function setup() {
   // canvas
@@ -13,8 +14,10 @@ async function setup() {
   noLoop()
 
   canvas.elt.onclick = () => {
-	popup = window.open("./popup.html", "hello", `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,
-	width=${WIDTH},height=${HEIGHT},left=100,top=100,fullscreen=yes`);
+	canvas.elt.requestFullscreen()
+
+	// popup = window.open("./popup.html", "hello", `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,
+	// width=${WIDTH},height=${HEIGHT},left=100,top=100,fullscreen=yes`);
   }
 }
 
@@ -30,11 +33,15 @@ const $ui = new Vue({
     // if (restored) {
     //    this.pads = JSON.parse(restored) 
     // } else {
-      for (let i = 0; i < 24; i++) {
+      for (let i = 0; i < NUMPADS; i++) {
         let restored = await idbKeyval.get(`image-${i}`);
-        this.pads.push(restored)
-        if (restored) {
-          images[i] = loadImage(this.pads[i])
+        this.pads.push({
+			image: restored,
+			justTriggered: false
+		})
+        
+		if (restored) {
+          images[i] = loadImage(restored)
         }
       }  
     // }
@@ -66,7 +73,7 @@ const $ui = new Vue({
       var reader = new FileReader();
       reader.onloadend = async () =>{
         console.log('RESULT', reader.result)
-        this.pads[i] = reader.result
+        this.pads[i].image = reader.result
         images[i] = loadImage(reader.result)
 
 
@@ -81,17 +88,29 @@ const $ui = new Vue({
       console.log("File(s) in drop zone");
       ev.preventDefault();
     },
+
+	padPressed(i) {
+		this.triggerPad(i)
+		this.pads[i].justTriggered = true
+
+	},
+
+	padReleased(i) {
+		this.pads[i].justTriggered = false
+	},
     
     triggerPad(i) {
-		let x = images[i].width < WIDTH ? random(WIDTH) : 0
-		let y = images[i].width < WIDTH ? random(HEIGHT) : 0
-		image(images[i], x, y)
-
-		if (popup) {
-			popup.eval(`
-				image(images[${i}], ${x}, ${y});
-			`)
+		if (images[i]) {
+			let x = images[i].width < WIDTH ? random(WIDTH) : 0
+			let y = images[i].width < WIDTH ? random(HEIGHT) : 0
+			image(images[i], x, y)
 		}
+	},
+
+	getNoteNameAndOctave(midiNoteNum) {
+		let octave = Math.floor((midiNoteNum / 12)) - 2;
+		let note = ["C", "C#", "D", "D#", "E", "F", "F#", "G",  "G#", "A", "A#", "B"][midiNoteNum % 12]
+		return `${octave} - ${note}`
 	}
   }
 })
@@ -110,9 +129,19 @@ WebMidi.enable(err => {
   $ui.inputs = WebMidi.inputs
   currentMidiInput = WebMidi.inputs[0];
   currentMidiInput.addListener("noteon", "all", e => {
-    console.log(e)
-    $ui.triggerPad(e.note.number)
+	  	let noteNumber = e.note.number
+		console.log(e)
+		$ui.triggerPad(noteNumber)
+
+		$ui.pads[noteNumber].justTriggered = true
+
   })
+
+  currentMidiInput.addListener("noteoff", "all", e => {
+		let noteNumber = e.note.number
+		console.log(e)
+		$ui.pads[noteNumber].justTriggered = false
+	})
 });
 
 // UTILITIES =======================================

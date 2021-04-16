@@ -175,3 +175,29 @@ header {
 .pad:hover {
   background: #eee;
 }
+
+.pad.just-triggered {
+  background: cyan;
+}
+
+.pad:not(.just-triggered) {
+  transition: background .25s;
+}
+
+canvas:hover {
+  opacity: .8;
+}
+
+@keyframes pad-trigger {
+  from {
+    background: cyan;
+  }
+
+  to {
+    background: transparent;
+  }
+}
+
+.pad {
+  user-select: none;
+}

@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <title>posemidi</title>
+    
+    <title>picture-drummachine</title>
 
     <!-- import the webpage's stylesheet -->
     <link rel="stylesheet" href="/style.css" />
@@ -15,9 +12,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@5/dist/iife/index-min.js"></script>
-
+    <script src="./note-parser.js"></script>
     <script src="/script.js" defer></script>
   </head>
+
   <body>
     <div id="posemidi">
       <main id="main">
@@ -29,8 +27,15 @@
         </select>
         
         <div class="pads">
-          <div class="pad" v-for="(pad, i) of pads"  @drop="dropHandler(i, $event)"    @dragover="dragOverHandler(i, $event)" @click="triggerPad(i)">
-            <img v-if="pad" :src="pad"/>
+          <div class="pad" 
+            :class="{'just-triggered': pad.justTriggered}" 
+            v-for="(pad, i) of pads"  
+            @drop="dropHandler(i, $event)"    
+            @dragover="dragOverHandler(i, $event)" 
+            @pointerdown="padPressed(i)"
+            @pointerup="padReleased(i)">
+            <img v-if="pad.image" :src="pad.image"/>
+            {{getNoteNameAndOctave(i)}}
           </div>
         </div>
       </div>
