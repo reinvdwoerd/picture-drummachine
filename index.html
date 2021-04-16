@@ -31,6 +31,7 @@
             :class="{'just-triggered': pad.justTriggered}" 
             v-for="(pad, i) of pads"  
             @drop="dropHandler(i, $event)"    
+            @dragstart="dragStartHandler(i)"
             @dragover="dragOverHandler(i, $event)" 
             @pointerdown="padPressed(i)"
             @pointerup="padReleased(i)">

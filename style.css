@@ -14,7 +14,7 @@ body {
 #posemidi {
   display: grid;
   height: 100vh;
-  grid-template-columns: max-content auto;;
+  grid-template-rows: max-content auto;
 }
 
 canvas {
@@ -34,11 +34,13 @@ main {
   flex-direction: column;
   /* padding: 50px; */
   width: 100%;
+  background: #000000b0;
   /* height: 500px; */
   top: 0;
   /* position: sticky; */
   /* flex-direction: column; */
   /* transition: opacity 0.2s; */
+/*   position: fixed; */
 }
 
 main.half-transparent {
@@ -164,21 +166,24 @@ header {
 
 .pad {
   border: 1px solid  #9f9f9f;
-  height: 200px;
+  /* height: 200px; */
   padding: 10px;
+  padding-top: 100%;
   display: grid;
   justify-content: center;
   width: 100%;
   align-items: center;
-  flex-direction: column;;
+  flex-direction: column;
   grid-template-rows: 130px 70px;
   padding-top: 20px;
+  
 }
 
 .pad img {
   object-fit: contain;
   object-position: center center;
   max-width: 100%;
+  max-height: calc(100% - 50px);
 }
 
 .pad:hover {
@@ -198,7 +203,7 @@ header {
 }
 
 canvas:hover {
-  opacity: .8;
+
 }
 
 @keyframes pad-trigger {
@@ -218,3 +223,5 @@ canvas:hover {
 select.inputs {
   order: 2;
 }
+
+html {}
