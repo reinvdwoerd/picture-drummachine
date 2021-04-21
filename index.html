@@ -1,47 +1,40 @@
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    
-    <title>picture-drummachine</title>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- import the webpage's stylesheet -->
-    <link rel="stylesheet" href="/style.css" />
+	<title>picture-drummachine</title>
 
-    <!-- import the webpage's javascript file -->
-    <script src="https://cdn.jsdelivr.net/npm/webmidi"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/idb-keyval@5/dist/iife/index-min.js"></script>
-    <script src="/script.js" defer></script>
-  </head>
+	<!-- import the webpage's stylesheet -->
+	<link rel="stylesheet" href="style.css" />
 
-  <body>
-    <div id="posemidi">
-      <main id="main">
-        <select class="inputs" @change="onMidiInputChange">
-          <option v-for="input in inputs">{{input.name}}</option>
-        </select>
-      </main>
+	<!-- import the webpage's javascript file -->
+	<script src="https://cdn.jsdelivr.net/npm/webmidi"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/idb-keyval@5/dist/iife/index-min.js"></script>
+	<script src="script.js" defer></script>
+</head>
 
-      <div class="ui">
-        
-        
-        <div class="pads">
-          <div class="pad" 
-            :class="{'just-triggered': pad.justTriggered}" 
-            v-for="(pad, i) of pads"  
-            @drop="dropHandler(i, $event)"    
-            @dragstart="dragStartHandler(i)"
-            @dragover="dragOverHandler(i, $event)" 
-            @pointerdown="padPressed(i)"
-            @pointerup="padReleased(i)">
 
-            <img v-if="pad.image" :src="pad.image"/>
-            <div v-else></div>
-            <span class="note">{{getNoteNameAndOctave(i)}}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </body>
-</html>
+<body>
+	<div id="posemidi">
+		<main id="main">
+			<select class="inputs" @change="onMidiInputChange">
+				<option v-for="input in inputs">{{input.name}}</option>
+			</select>
+		</main>
+
+		<div class="ui">
+			<div class="pads">
+				<div class="pad" :class="{'just-triggered': pad.justTriggered}" v-for="(pad, i) of pads"
+					@drop="dropHandler(i, $event)" @dragstart="dragStartHandler(i)"
+					@dragover="dragOverHandler(i, $event)" @pointerdown="padPressed(i)" @pointerup="padReleased(i)">
+
+					<img v-if="pad.image" :src="pad.image" />
+					<div v-else></div>
+					<span class="note">{{getNoteNameAndOctave(i)}}</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>

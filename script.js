@@ -65,14 +65,17 @@ const $ui = new Vue({
 			ev.preventDefault();
 			console.log("Dropped", ev);
 
-			if (ev.dataTransfer.files[0]) {
+
+			for (let ii = i; ii < Math.min(NUMPADS,); ii++) {
+
+			}
+
+			if (ev.dataTransfer.files.le) {
 				var reader = new FileReader();
 				reader.onloadend = async () => {
 					console.log('RESULT', reader.result)
 					this.pads[i].image = reader.result
 					images[i] = loadImage(reader.result)
-
-
 					idbKeyval.set(`image-${i}`, reader.result);
 					this.$forceUpdate()
 				}
@@ -80,12 +83,17 @@ const $ui = new Vue({
 				reader.readAsDataURL(ev.dataTransfer.files[0]);
 			}
 
-			else if (dragSourceIndex) {
+
+			else if (dragSourceIndex !== null) {
+				// Assign source pad to target pad
 				this.pads[i] = this.pads[dragSourceIndex]
 				images[i] = loadImage(this.pads[dragSourceIndex].image)
+				idbKeyval.set(`image-${i}`, this.pads[dragSourceIndex].image);
 
+				// Clear source pad
 				this.pads[dragSourceIndex] = { ...this.pads[dragSourceIndex], image: null }
 				images[dragSourceIndex] = null
+				idbKeyval.set(`image-${dragSourceIndex}`, null);
 
 				dragSourceIndex = null
 			}
