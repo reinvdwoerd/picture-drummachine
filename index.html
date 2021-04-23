@@ -20,7 +20,7 @@
 	<div id="posemidi">
 		<main id="main">
 			<select class="inputs" @change="onMidiInputChange">
-				<option v-for="input in inputs">{{input.name}}</option>
+				<option v-for="input in inputs" :selected="input.name == currentMidiInput.name">{{input.name}}</option>
 			</select>
 		</main>
 
