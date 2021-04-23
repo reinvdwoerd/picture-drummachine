@@ -1,4 +1,3 @@
-let currentMidiInput
 let images = {}
 let popup = {}
 
@@ -9,8 +8,8 @@ let WIDTH = screen.width
 let HEIGHT = screen.height
 let NUMPADS = 127
 
+
 async function setup() {
-	// canvas
 	let canvas = createCanvas(WIDTH, HEIGHT);
 	canvas.parent("main")
 	background(0)
@@ -26,10 +25,13 @@ const $ui = new Vue({
 	data: {
 		inputs: null,
 		padsDropRange: null,
-		pads: []
+		pads: [],
+		currentMidiInput: null,
+		size: 10
 	},
 
 	async mounted() {
+		// Try to restore all the pads from indexedDB
 		for (let i = 0; i < NUMPADS; i++) {
 			let restored = await idbKeyval.get(`image-${i}`);
 			this.pads.push({
@@ -46,11 +48,18 @@ const $ui = new Vue({
 	methods: {
 		onMidiInputChange(e) {
 			currentMidiInput = WebMidi.getInputByName(e.target.value);
-			console.log("changed output to: ", this.currentMidiInput.name);
+			console.log("changed output to: ", currentMidiInput.name);
+			localStorage.setItem('midiInput', currentMidiInput.name)
 
 			currentMidiInput.addListener("noteon", "all", e => {
-				console.log(e)
-				this.triggerPad(e.note.number)
+				let noteNumber = e.note.number
+				this.triggerPad(noteNumber)
+				this.pads[noteNumber].justTriggered = true
+			})
+
+			currentMidiInput.addListener("noteoff", "all", e => {
+				let noteNumber = e.note.number
+				this.pads[noteNumber].justTriggered = false
 			})
 		},
 
@@ -125,9 +134,15 @@ const $ui = new Vue({
 
 		triggerPad(i) {
 			if (images[i]) {
-				let x = images[i].width < WIDTH ? random(WIDTH) : 0
-				let y = images[i].width < WIDTH ? random(HEIGHT) : 0
-				image(images[i], x, y)
+				if (mouseIsPressed) {
+					imageMode(CENTER)
+					image(images[i], mouseX, mouseY, this.size, images[i].height * this.size / images[i].width)
+				} else {
+					imageMode(CORNER)
+
+					image(images[i], 0, 0, WIDTH, HEIGHT)
+				}
+
 			}
 		},
 
@@ -147,39 +162,40 @@ const $ui = new Vue({
 
 
 
-// DRAW ===========================================
 
 // MIDI ========================================
 // =============================================
-
-
 WebMidi.enable(err => {
 	if (err) console.log(err);
 	$ui.inputs = WebMidi.inputs
-	currentMidiInput = WebMidi.inputs[0];
-	currentMidiInput.addListener("noteon", "all", e => {
+
+	let restoredMidiInput = localStorage.getItem('midiInput')
+	if (restoredMidiInput) {
+		$ui.currentMidiInput = WebMidi.getInputByName(restoredMidiInput);
+	} else {
+		$ui.currentMidiInput = WebMidi.inputs[0];
+	}
+
+	$ui.currentMidiInput.addListener("noteon", "all", e => {
 		let noteNumber = e.note.number
-		console.log(e)
 		$ui.triggerPad(noteNumber)
-
 		$ui.pads[noteNumber].justTriggered = true
-
 	})
 
-	currentMidiInput.addListener("noteoff", "all", e => {
+	$ui.currentMidiInput.addListener("noteoff", "all", e => {
 		let noteNumber = e.note.number
-		console.log(e)
 		$ui.pads[noteNumber].justTriggered = false
 	})
+
+	$ui.currentMidiInput.addListener("pitchbend", "all", e => {
+		console.log(e.value)
+		$ui.size = map(e.value, -1, 1, 5, WIDTH * 8)
+	})
 });
+
 
 // UTILITIES =======================================
 // =================================================
 function clamp(num, min, max) {
 	return num <= min ? min : num >= max ? max : num;
 }
-
-
-// DRAG AND DROP ===================================
-// =================================================
-
