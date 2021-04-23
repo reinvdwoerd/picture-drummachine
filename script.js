@@ -50,8 +50,6 @@ const $ui = new Vue({
 			currentMidiInput = WebMidi.getInputByName(e.target.value);
 			console.log("changed output to: ", currentMidiInput.name);
 			localStorage.setItem('midiInput', currentMidiInput.name)
-
-
 		},
 
 		dragStartHandler(i) {
@@ -67,62 +65,89 @@ const $ui = new Vue({
 
 		},
 
-		async dropHandler(i, ev) {
+		dropHandler(i, ev) {
 			ev.preventDefault();
 			console.log("Dropped", ev);
 
-			let itemI = 0;
+
+			const items = Array.from(ev.dataTransfer.items)
+				.filter(item => item.type == "text/html" || item.kind == "file")
 
 
-			for (const item of Array.from(ev.dataTransfer.items)) {
-				console.log(item.type)
+			/**
+			 * It's from another pad
+			 */
+			if (dragSourceIndex !== null) {
+				// Assign source pad to target pad
+				this.pads[i] = this.pads[dragSourceIndex]
+				images[i] = loadImage(this.pads[dragSourceIndex].image)
+				idbKeyval.set(`image-${i}`, this.pads[dragSourceIndex].image);
 
-				// If it's Google Images or a different page
-				if (item.type == "text/html") {
-					itemI++
-					item.getAsString(async string => {
-						// console.log(string) // log the raw thing
-						const dummyEl = document.createElement('div')
-						dummyEl.innerHTML = string
-						const img = dummyEl.querySelector('img')
-						const url = img.getAttribute('src')
-						console.log(img, url)
+				// Clear source pad
+				this.pads[dragSourceIndex] = { ...this.pads[dragSourceIndex], image: null }
+				images[dragSourceIndex] = null
+				idbKeyval.set(`image-${dragSourceIndex}`, null);
 
-						const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`)
-						const blob = await response.blob()
-						const objectUrl = URL.createObjectURL(blob)
-						console.log(blob)
-						console.log(objectUrl)
+				dragSourceIndex = null
+			}
 
-						const result = await readFileAsDataUrl(blob)
-						console.log(result)
+			/**
+			 * It's a file or from a different website
+			 */
+			else {
+				items.forEach(async (item, itemI) => {
+					if (item.type == "text/html") {
+						item.getAsString(async string => {
+							// console.log(string) // log the raw thing
+							const url = extractImgUrlFromHtmlString(string)
 
-						// this.pads[i + itemI].image = reader.result
-						// images[i + itemI] = loadImage(reader.result)
-						// idbKeyval.set(`image-${i + itemI}`, reader.result);
-						this.$forceUpdate()
-					})
-				}
+							if (url.includes('data:image/')) {
+								// It's already a data url
+								this.setPadImageDataUrlAndUpdate(i + itemI, url)
+							} else {
+								// It's a normal, remote url
+								const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`)
+								const blob = await response.blob()
+								const dataUrl = await readFileAsDataUrl(blob)
+								console.log(dataUrl)
+								this.setPadImageDataUrlAndUpdate(i + itemI, dataUrl)
+							}
+						})
+					}
 
-				if (item.kind == "file") {
-					const result = await readFileAsDataUrl(file)
+					else if (item.kind == "file") {
+						const file = item.getAsFile()
+						console.log(item.type)
 
-					this.pads[i + itemI].image = result
-					images[i + itemI] = loadImage(result)
-					idbKeyval.set(`image-${i + itemI}`, result);
-					this.$forceUpdate()
-				}
+						if (item.type == "image/gif") {
+							const abuf = await file.arrayBuffer()
+							const buf = buffer.Buffer.from(abuf)
+							console.log(buf)
+
+							gifFrames({ url: buf, frames: 'all' }).then(frameData => {
+								for (const frame of frameData) {
+									console.log(frame)
+								}
+								// frameData[0].getImage().pipe(fs.createWriteStream('firstframe.jpg'));
+							});
+						}
+
+						else if (["image/jpeg", "image/png"].includes(item.type)) {
+							const dataUrl = await readFileAsDataUrl(file)
+							this.setPadImageDataUrlAndUpdate(i + itemI, dataUrl)
+						}
+
+						else {
+							console.warn("file type not supported: ", item.type)
+						}
 
 
+
+					}
+				});
 			}
 
 
-
-			if (ev.dataTransfer.files.length > 0) {
-				Array.from(ev.dataTransfer.files).forEach((file, fileI) => {
-
-				})
-			}
 
 			// else if (ev.dataTransfer.items.length > 0) {
 			// 	Array.from(ev.dataTransfer.items).forEach((item, fileI) => {
@@ -144,24 +169,20 @@ const $ui = new Vue({
 			// }
 
 
-			if (dragSourceIndex !== null) {
-				// Assign source pad to target pad
-				this.pads[i] = this.pads[dragSourceIndex]
-				images[i] = loadImage(this.pads[dragSourceIndex].image)
-				idbKeyval.set(`image-${i}`, this.pads[dragSourceIndex].image);
 
-				// Clear source pad
-				this.pads[dragSourceIndex] = { ...this.pads[dragSourceIndex], image: null }
-				images[dragSourceIndex] = null
-				idbKeyval.set(`image-${dragSourceIndex}`, null);
-
-				dragSourceIndex = null
-			}
 
 			this.pads.forEach(pad => {
 				pad.justTriggered = false
 			});
 
+			this.$forceUpdate()
+		},
+
+		setPadImageDataUrlAndUpdate(i, dataUrl) {
+			this.pads[i].image = dataUrl
+			images[i] = loadImage(dataUrl)
+			idbKeyval.set(`image-${i}`, dataUrl);
+			// console.log(dataUrl)
 			this.$forceUpdate()
 		},
 
@@ -255,4 +276,13 @@ async function readFileAsDataUrl(something) {
 		}
 		reader.readAsDataURL(something);
 	})
+}
+
+function extractImgUrlFromHtmlString(string) {
+	const dummyEl = document.createElement('div')
+	dummyEl.innerHTML = string
+	const img = dummyEl.querySelector('img')
+	// console.log(img)
+	const url = img.getAttribute('src')
+	return url
 }
