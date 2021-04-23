@@ -31,6 +31,19 @@ const $ui = new Vue({
 	},
 
 	async mounted() {
+		// Initialize midi
+		WebMidi.enable(err => {
+			if (err) console.log(err);
+			this.inputs = WebMidi.inputs
+
+			let restoredMidiInput = localStorage.getItem('midiInput')
+			if (restoredMidiInput) {
+				this.changeMidiInput(WebMidi.getInputByName(restoredMidiInput))
+			} else {
+				this.changeMidiInput(WebMidi.inputs[0])
+			}
+		});
+
 		// Try to restore all the pads from indexedDB
 		for (let i = 0; i < NUMPADS; i++) {
 			let restored = await idbKeyval.get(`image-${i}`);
@@ -52,17 +65,41 @@ const $ui = new Vue({
 			localStorage.setItem('midiInput', currentMidiInput.name)
 		},
 
+		changeMidiInput(midiInput) {
+			// If it exists, remove all listeners from previous
+			if (this.currentMidiInput) {
+				this.currentMidiInput.removeListener("noteon")
+				this.currentMidiInput.removeListener("noteoff")
+				this.currentMidiInput.removeListener("pitchbend")
+			}
+
+			this.currentMidiInput = midiInput
+
+			this.currentMidiInput.addListener("noteon", "all", e => {
+				let noteNumber = e.note.number
+				this.triggerPad(noteNumber)
+				this.pads[noteNumber].justTriggered = true
+			})
+
+			this.currentMidiInput.addListener("noteoff", "all", e => {
+				let noteNumber = e.note.number
+				this.pads[noteNumber].justTriggered = false
+			})
+
+			this.currentMidiInput.addListener("pitchbend", "all", e => {
+				console.log(e.value)
+				this.size = map(e.value, -1, 1, 5, WIDTH * 8)
+			})
+		},
+
 		dragStartHandler(i) {
 			dragSourceIndex = i
 		},
 
 		dragOverHandler(i, ev) {
 			ev.preventDefault();
-
 			// console.log([i, i + ev.dataTransfer.files.length]);
-
 			this.padsDropRange = [i, i + ev.dataTransfer.files.length]
-
 		},
 
 		dropHandler(i, ev) {
@@ -91,22 +128,24 @@ const $ui = new Vue({
 				dragSourceIndex = null
 			}
 
+
 			/**
 			 * It's a file or from a different website
 			 */
 			else {
 				items.forEach(async (item, itemI) => {
+					// HTML from a website
 					if (item.type == "text/html") {
 						item.getAsString(async string => {
 							// console.log(string) // log the raw thing
 							const url = extractImgUrlFromHtmlString(string)
 
 							if (url.includes('data:image/')) {
-								// It's already a data url
+								// It's already a data url (sometimes happens on Google Images)
 								this.setPadImageDataUrlAndUpdate(i + itemI, url)
 							} else {
 								// It's a normal, remote url
-								const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`)
+								const response = await fetch(`http://185.65.53.46:4561/${url}`)
 								const blob = await response.blob()
 								const dataUrl = await readFileAsDataUrl(blob)
 								console.log(dataUrl)
@@ -115,23 +154,24 @@ const $ui = new Vue({
 						})
 					}
 
+					// Local (?) file
 					else if (item.kind == "file") {
 						const file = item.getAsFile()
 						console.log(item.type)
 
+						// Read each frame separately
 						if (item.type == "image/gif") {
-							const abuf = await file.arrayBuffer()
-							const buf = buffer.Buffer.from(abuf)
-							console.log(buf)
-
-							gifFrames({ url: buf, frames: 'all' }).then(frameData => {
-								for (const frame of frameData) {
-									console.log(frame)
-								}
-								// frameData[0].getImage().pipe(fs.createWriteStream('firstframe.jpg'));
+							const dataUrl = await readFileAsDataUrl(file)
+							gifFrames({ url: dataUrl, frames: 'all', outputType: "canvas", cumulative: true }).then(frameData => {
+								frameData.forEach(async (frame, frameI) => {
+									const img = frame.getImage()
+									console.log(frame, img)
+									this.setPadImageDataUrlAndUpdate(i + itemI + frameI, img.toDataURL())
+								})
 							});
 						}
 
+						// Read only one frame
 						else if (["image/jpeg", "image/png"].includes(item.type)) {
 							const dataUrl = await readFileAsDataUrl(file)
 							this.setPadImageDataUrlAndUpdate(i + itemI, dataUrl)
@@ -140,9 +180,6 @@ const $ui = new Vue({
 						else {
 							console.warn("file type not supported: ", item.type)
 						}
-
-
-
 					}
 				});
 			}
@@ -231,33 +268,9 @@ const $ui = new Vue({
 
 // MIDI ========================================
 // =============================================
-WebMidi.enable(err => {
-	if (err) console.log(err);
-	$ui.inputs = WebMidi.inputs
 
-	let restoredMidiInput = localStorage.getItem('midiInput')
-	if (restoredMidiInput) {
-		$ui.currentMidiInput = WebMidi.getInputByName(restoredMidiInput);
-	} else {
-		$ui.currentMidiInput = WebMidi.inputs[0];
-	}
 
-	$ui.currentMidiInput.addListener("noteon", "all", e => {
-		let noteNumber = e.note.number
-		$ui.triggerPad(noteNumber)
-		$ui.pads[noteNumber].justTriggered = true
-	})
 
-	$ui.currentMidiInput.addListener("noteoff", "all", e => {
-		let noteNumber = e.note.number
-		$ui.pads[noteNumber].justTriggered = false
-	})
-
-	$ui.currentMidiInput.addListener("pitchbend", "all", e => {
-		console.log(e.value)
-		$ui.size = map(e.value, -1, 1, 5, WIDTH * 8)
-	})
-});
 
 
 // UTILITIES =======================================
