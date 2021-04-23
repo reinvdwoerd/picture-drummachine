@@ -145,11 +145,22 @@ const $ui = new Vue({
 								this.setPadImageDataUrlAndUpdate(i + itemI, url)
 							} else {
 								// It's a normal, remote url
-								const response = await fetch(`http://185.65.53.46:4561/${url}`)
+								const response = await fetch(url)
 								const blob = await response.blob()
 								const dataUrl = await readFileAsDataUrl(blob)
 								console.log(dataUrl)
-								this.setPadImageDataUrlAndUpdate(i + itemI, dataUrl)
+
+								if (dataUrl.includes('data:image/gif')) {
+									gifFrames({ url: dataUrl, frames: 'all', outputType: "canvas", cumulative: true }).then(frameData => {
+										frameData.forEach(async (frame, frameI) => {
+											const img = frame.getImage()
+											console.log(frame, img)
+											this.setPadImageDataUrlAndUpdate(i + itemI + frameI, img.toDataURL())
+										})
+									});
+								} else {
+									this.setPadImageDataUrlAndUpdate(i + itemI, dataUrl)
+								}
 							}
 						})
 					}
