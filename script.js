@@ -4,6 +4,7 @@ let popup = {}
 
 let dragSourceIndex = null
 
+
 let WIDTH = screen.width
 let HEIGHT = screen.height
 let NUMPADS = 127
@@ -24,6 +25,7 @@ const $ui = new Vue({
 	el: '#posemidi',
 	data: {
 		inputs: null,
+		padsDropRange: null,
 		pads: []
 	},
 
@@ -59,28 +61,32 @@ const $ui = new Vue({
 		dragOverHandler(i, ev) {
 			ev.preventDefault();
 			console.log("File(s) in drop zone", ev);
+			console.log("File(s) in drop zone", ev.dataTransfer.files.length);
+			console.log([i, i + ev.dataTransfer.files.length]);
+
+			this.padsDropRange = [i, i + ev.dataTransfer.files.length]
+
 		},
 
 		dropHandler(i, ev) {
 			ev.preventDefault();
-			console.log("Dropped", ev);
+			console.log("Dropped", ev.dataTransfer.files);
 
 
-			for (let ii = i; ii < Math.min(NUMPADS,); ii++) {
 
-			}
+			if (ev.dataTransfer.files.length > 0) {
+				Array.from(ev.dataTransfer.files).forEach((file, fileI) => {
+					const reader = new FileReader();
+					reader.onloadend = async () => {
+						// console.log('RESULT', reader.result)
+						this.pads[i + fileI].image = reader.result
+						images[i + fileI] = loadImage(reader.result)
+						idbKeyval.set(`image-${i + fileI}`, reader.result);
+						this.$forceUpdate()
+					}
 
-			if (ev.dataTransfer.files.le) {
-				var reader = new FileReader();
-				reader.onloadend = async () => {
-					console.log('RESULT', reader.result)
-					this.pads[i].image = reader.result
-					images[i] = loadImage(reader.result)
-					idbKeyval.set(`image-${i}`, reader.result);
-					this.$forceUpdate()
-				}
-
-				reader.readAsDataURL(ev.dataTransfer.files[0]);
+					reader.readAsDataURL(file);
+				})
 			}
 
 
@@ -129,6 +135,11 @@ const $ui = new Vue({
 			let octave = Math.floor((midiNoteNum / 12)) - 2;
 			let note = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"][midiNoteNum % 12]
 			return `${octave} - ${note}`
+		},
+
+		willBeDroppedIn(i) {
+			if (this.padsDropRange == null) return false
+			return i > this.padsDropRange[0] && i < this.padsDropRange[1]
 		}
 	}
 })
