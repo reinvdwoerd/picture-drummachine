@@ -51,16 +51,7 @@ const $ui = new Vue({
 			console.log("changed output to: ", currentMidiInput.name);
 			localStorage.setItem('midiInput', currentMidiInput.name)
 
-			currentMidiInput.addListener("noteon", "all", e => {
-				let noteNumber = e.note.number
-				this.triggerPad(noteNumber)
-				this.pads[noteNumber].justTriggered = true
-			})
 
-			currentMidiInput.addListener("noteoff", "all", e => {
-				let noteNumber = e.note.number
-				this.pads[noteNumber].justTriggered = false
-			})
 		},
 
 		dragStartHandler(i) {
@@ -69,37 +60,91 @@ const $ui = new Vue({
 
 		dragOverHandler(i, ev) {
 			ev.preventDefault();
-			console.log("File(s) in drop zone", ev);
-			console.log("File(s) in drop zone", ev.dataTransfer.files.length);
-			console.log([i, i + ev.dataTransfer.files.length]);
+
+			// console.log([i, i + ev.dataTransfer.files.length]);
 
 			this.padsDropRange = [i, i + ev.dataTransfer.files.length]
 
 		},
 
-		dropHandler(i, ev) {
+		async dropHandler(i, ev) {
 			ev.preventDefault();
-			console.log("Dropped", ev.dataTransfer.files);
+			console.log("Dropped", ev);
+
+			let itemI = 0;
+
+
+			for (const item of Array.from(ev.dataTransfer.items)) {
+				console.log(item.type)
+
+				// If it's Google Images or a different page
+				if (item.type == "text/html") {
+					itemI++
+					item.getAsString(async string => {
+						// console.log(string) // log the raw thing
+						const dummyEl = document.createElement('div')
+						dummyEl.innerHTML = string
+						const img = dummyEl.querySelector('img')
+						const url = img.getAttribute('src')
+						console.log(img, url)
+
+						const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`)
+						const blob = await response.blob()
+						const objectUrl = URL.createObjectURL(blob)
+						console.log(blob)
+						console.log(objectUrl)
+
+						const result = await readFileAsDataUrl(blob)
+						console.log(result)
+
+						// this.pads[i + itemI].image = reader.result
+						// images[i + itemI] = loadImage(reader.result)
+						// idbKeyval.set(`image-${i + itemI}`, reader.result);
+						this.$forceUpdate()
+					})
+				}
+
+				if (item.kind == "file") {
+					const result = await readFileAsDataUrl(file)
+
+					this.pads[i + itemI].image = result
+					images[i + itemI] = loadImage(result)
+					idbKeyval.set(`image-${i + itemI}`, result);
+					this.$forceUpdate()
+				}
+
+
+			}
 
 
 
 			if (ev.dataTransfer.files.length > 0) {
 				Array.from(ev.dataTransfer.files).forEach((file, fileI) => {
-					const reader = new FileReader();
-					reader.onloadend = async () => {
-						// console.log('RESULT', reader.result)
-						this.pads[i + fileI].image = reader.result
-						images[i + fileI] = loadImage(reader.result)
-						idbKeyval.set(`image-${i + fileI}`, reader.result);
-						this.$forceUpdate()
-					}
 
-					reader.readAsDataURL(file);
 				})
 			}
 
+			// else if (ev.dataTransfer.items.length > 0) {
+			// 	Array.from(ev.dataTransfer.items).forEach((item, fileI) => {
+			// 		itemn.getAsString(url => {
+			// 			const reader = new FileReader();
+			// 			reader.onloadend = async () => {
+			// 				// console.log('RESULT', reader.result)
+			// 				this.pads[i + fileI].image = reader.result
+			// 				images[i + fileI] = loadImage(reader.result)
+			// 				idbKeyval.set(`image-${i + fileI}`, reader.result);
+			// 				this.$forceUpdate()
+			// 			}
 
-			else if (dragSourceIndex !== null) {
+			// 			reader.readAsDataURL(item);
+			// 		});
+
+
+			// 	})
+			// }
+
+
+			if (dragSourceIndex !== null) {
 				// Assign source pad to target pad
 				this.pads[i] = this.pads[dragSourceIndex]
 				images[i] = loadImage(this.pads[dragSourceIndex].image)
@@ -198,4 +243,16 @@ WebMidi.enable(err => {
 // =================================================
 function clamp(num, min, max) {
 	return num <= min ? min : num >= max ? max : num;
+}
+
+
+
+async function readFileAsDataUrl(something) {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onloadend = async () => {
+			resolve(reader.result)
+		}
+		reader.readAsDataURL(something);
+	})
 }
