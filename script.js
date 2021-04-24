@@ -21,7 +21,7 @@ async function setup() {
 }
 
 const $ui = new Vue({
-	el: '#posemidi',
+	el: '#picture-drummachine',
 	data: {
 		inputs: null,
 		padsDropRange: null,
