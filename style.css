@@ -17,11 +17,9 @@ body {
 }
 
 canvas {
-	margin: auto;
-	height: 400px !important;
 	width: 100% !important;
-	width: unset !important;
-	/* height: unset !important; */
+	object-fit: scale-down;
+	height: auto !important;
 }
 
 canvas:hover {
@@ -36,6 +34,11 @@ main {
 	padding: 15px;
 }
 
+.controls {
+	display: flex;
+	/* width: 50%; */
+}
+
 /* Landscape */
 @media (min-aspect-ratio: 1/1) {
 	#picture-drummachine {
@@ -47,12 +50,26 @@ main {
 		display: flex;
 		/* align-items: flex-start; */
 	}
+
+	canvas {
+		margin-bottom: 15px;
+	}
+
+	.controls {
+		flex-direction: column;
+		order: 2;
+	}
 }
 
 /* Portrait */
 @media (max-aspect-ratio: 1/1) {
 	#picture-drummachine {
 		grid-template-rows: max-content auto;
+	}
+
+	.controls {
+		margin-bottom: 10px;
+		display: grid;
 	}
 }
 
@@ -97,11 +114,22 @@ select {
 	/* background: none; */
 }
 
+select,
+input,
 button {
-	background: none;
+	background-color: hsl(113deg 0% 69%);
+}
+
+select:hover,
+input:hover,
+button:hover {
+	background-color: hsl(113deg 0% 90%);
+}
+
+button {
 	margin-bottom: auto;
 	border: 1px solid transparent;
-	opacity: 0.6;
+	width: max-content;
 }
 
 button:hover {
@@ -109,13 +137,12 @@ button:hover {
 	border: 1px solid #ffffff85;
 }
 
-progress {
-	width: 100%;
-	filter: grayscale(1) invert(1) brightness(1.1);
+input[type="range"] {
+	filter: grayscale(1) invert(1) brightness(3) contrast(.8);
 }
 
-input[type="range"] {
-	filter: grayscale(1) invert(1) brightness(3);
+input[type="range"]:hover {
+	filter: grayscale(1) invert(1) brightness(3) contrast(1);
 }
 
 input.playback-speed {

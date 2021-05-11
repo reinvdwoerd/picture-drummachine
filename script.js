@@ -69,7 +69,7 @@ const $ui = new Vue({
 		},
 		gridPadStyle() {
 			return {
-				'height': 1000 / this.gridColumns
+				'height': map(this.gridColumns, 2, 14, 200, 0)
 			}
 		},
 	},
@@ -81,7 +81,7 @@ const $ui = new Vue({
 
 		setGridSize(event) {
 			localStorage.setItem('gridColumns', event.target.value)
-			this.gridColumns = event.target.value
+			this.gridColumns = Number(event.target.value)
 		},
 
 		onMidiInputChange(e) {
