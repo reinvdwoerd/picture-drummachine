@@ -1,6 +1,6 @@
 let images = {}
 let popup = {}
-
+let canvas
 
 let WIDTH = screen.width
 let HEIGHT = screen.height
@@ -8,14 +8,10 @@ let NUMPADS = 127
 
 
 async function setup() {
-	let canvas = createCanvas(WIDTH, HEIGHT);
+	canvas = createCanvas(WIDTH, HEIGHT);
 	canvas.parent("main")
 	background(0)
 	noLoop()
-
-	canvas.elt.onclick = () => {
-		canvas.elt.requestFullscreen()
-	}
 }
 
 const $ui = new Vue({
@@ -79,6 +75,10 @@ const $ui = new Vue({
 	},
 
 	methods: {
+		goFullscreen() {
+			canvas.elt.requestFullscreen()
+		},
+
 		setGridSize(event) {
 			localStorage.setItem('gridColumns', event.target.value)
 			this.gridColumns = event.target.value

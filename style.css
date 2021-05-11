@@ -14,13 +14,12 @@ body {
 #picture-drummachine {
 	display: grid;
 	height: 100vh;
-	grid-template-rows: max-content auto;
 }
 
 canvas {
 	margin: auto;
 	height: 400px !important;
-	/* width: 100% !important; */
+	width: 100% !important;
 	width: unset !important;
 	/* height: unset !important; */
 }
@@ -34,7 +33,30 @@ main {
 	width: 100%;
 	background: #000000b0;
 	top: 0;
+	padding: 15px;
 }
+
+/* Landscape */
+@media (min-aspect-ratio: 1/1) {
+	#picture-drummachine {
+		grid-template-columns: 1fr 2fr;
+	}
+
+	main {
+		flex-direction: column;
+		display: flex;
+		/* align-items: flex-start; */
+	}
+}
+
+/* Portrait */
+@media (max-aspect-ratio: 1/1) {
+	#picture-drummachine {
+		grid-template-rows: max-content auto;
+	}
+}
+
+
 
 main.half-transparent {
 	opacity: 0.5;
@@ -61,18 +83,18 @@ main.half-transparent {
 
   main {
     /* position: relative; */
-}
+
 
 .midi {
 	/* width: 50vw; */
 	margin-top: 0;
 	padding-right: 50px;
 }
-}
 
-*/ button,
+
+button,
 select {
-	background: none;
+	/* background: none; */
 }
 
 button {
@@ -102,12 +124,6 @@ input.playback-speed {
 	position: relative;
 }
 
-select.outputs {
-	/* margin: 15px 0; */
-	/* margin-left: auto; */
-	display: flex;
-	/* margin-bottom: 15px; */
-}
 
 code.info {
 	margin: 10px 0;
@@ -220,5 +236,5 @@ canvas:hover {}
 }
 
 select.inputs {
-	order: 2;
+	/* order: 2; */
 }
