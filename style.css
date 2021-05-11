@@ -29,7 +29,7 @@ canvas:hover {
 main {
 	flex-direction: column;
 	width: 100%;
-	background: #000000b0;
+	background: #000000be;
 	top: 0;
 	padding: 15px;
 }
@@ -183,6 +183,7 @@ header {
 	display: grid;
 	overflow: scroll;
 	height: 100%;
+	background: #4141413b;
 }
 
 
@@ -195,7 +196,8 @@ header {
 }
 
 .pad {
-	border: 1px solid #9f9f9f;
+	border: 1px solid #00000017;
+	border-width: 3px;
 	border-radius: 4px;
 	aspect-ratio: 1;
 	display: flex;
@@ -225,6 +227,12 @@ input[type="range"] {
 
 .pad:hover {
 	border-color: black;
+	/* background-color: #eee; */
+}
+
+
+.pad:hover .note {
+	/* background-color: #ccc; */
 }
 
 .pad.just-triggered,
@@ -243,7 +251,7 @@ input[type="range"] {
 	width: 100%;
 	padding-bottom: 3px;
 	padding-top: 3px;
-	background-color: #eee;
+	background-color: rgba(255, 255, 255, 0.301);
 }
 
 canvas:hover {}

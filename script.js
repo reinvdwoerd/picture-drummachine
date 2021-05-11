@@ -231,6 +231,10 @@ const $ui = new Vue({
 			this.$forceUpdate()
 		},
 
+		cancelDrop() {
+			this.dragSourceIndex = null
+		},
+
 		setPadImageDataUrlAndUpdate(i, dataUrl) {
 			this.pads[i].image = dataUrl
 			images[i] = loadImage(dataUrl)
