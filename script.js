@@ -1,8 +1,6 @@
 let images = {}
 let popup = {}
 
-let dragSourceIndex = null
-
 
 let WIDTH = screen.width
 let HEIGHT = screen.height
@@ -23,28 +21,37 @@ async function setup() {
 const $ui = new Vue({
 	el: '#picture-drummachine',
 	data: {
-		inputs: null,
-		padsDropRange: null,
 		pads: [],
+
+		inputs: null,
 		currentMidiInput: null,
-		size: 10
+
+		dragSourceIndex: null,
+		padsDropRange: null,
+
+		size: 10,
+		gridColumns: 7
 	},
 
 	async mounted() {
-		// Initialize midi
+		// Restore the amount of columns, or default
+		this.gridColumns = localStorage.getItem('gridColumns') || 7
+
+		// Try to initialize midi, show alert if it's not available
+		// in this browser
 		WebMidi.enable(err => {
-			if (err) console.log(err);
+			if (err) alert(err);
 			this.inputs = WebMidi.inputs
 
 			let restoredMidiInput = localStorage.getItem('midiInput')
 			if (restoredMidiInput) {
-				this.changeMidiInput(WebMidi.getInputByName(restoredMidiInput))
-			} else {
-				this.changeMidiInput(WebMidi.inputs[0])
+				this.changeMidiInputAndAddAndRemoveListeners(WebMidi.getInputByName(restoredMidiInput))
+			} else if (WebMidi.inputs.length > 0) {
+				this.changeMidiInputAndAddAndRemoveListeners(WebMidi.inputs[0])
 			}
 		});
 
-		// Try to restore all the pads from indexedDB
+		// Try to restore all the images from indexedDB
 		for (let i = 0; i < NUMPADS; i++) {
 			let restored = await idbKeyval.get(`image-${i}`);
 			this.pads.push({
@@ -58,14 +65,32 @@ const $ui = new Vue({
 		}
 	},
 
+	computed: {
+		gridColumnsStyle() {
+			return {
+				'grid-template-columns': `repeat(${this.gridColumns}, 1fr)`
+			}
+		},
+		gridPadStyle() {
+			return {
+				'height': 1000 / this.gridColumns
+			}
+		},
+	},
+
 	methods: {
+		setGridSize(event) {
+			localStorage.setItem('gridColumns', event.target.value)
+			this.gridColumns = event.target.value
+		},
+
 		onMidiInputChange(e) {
 			currentMidiInput = WebMidi.getInputByName(e.target.value);
 			console.log("changed output to: ", currentMidiInput.name);
 			localStorage.setItem('midiInput', currentMidiInput.name)
 		},
 
-		changeMidiInput(midiInput) {
+		changeMidiInputAndAddAndRemoveListeners(midiInput) {
 			// If it exists, remove all listeners from previous
 			if (this.currentMidiInput) {
 				this.currentMidiInput.removeListener("noteon")
@@ -93,39 +118,38 @@ const $ui = new Vue({
 		},
 
 		dragStartHandler(i) {
-			dragSourceIndex = i
+			this.dragSourceIndex = i
 		},
 
 		dragOverHandler(i, ev) {
 			ev.preventDefault();
-			// console.log([i, i + ev.dataTransfer.files.length]);
 			this.padsDropRange = [i, i + ev.dataTransfer.files.length]
 		},
 
 		dropHandler(i, ev) {
 			ev.preventDefault();
-			console.log("Dropped", ev);
 
-
+			// Only accept files or HTML text
 			const items = Array.from(ev.dataTransfer.items)
 				.filter(item => item.type == "text/html" || item.kind == "file")
 
 
 			/**
-			 * It's from another pad
+			 * Drag and dropped from another pad.
+			 * (prevent dropping on the same pad)
 			 */
-			if (dragSourceIndex !== null) {
+			if (this.dragSourceIndex !== null && i != this.dragSourceIndex) {
 				// Assign source pad to target pad
-				this.pads[i] = this.pads[dragSourceIndex]
-				images[i] = loadImage(this.pads[dragSourceIndex].image)
-				idbKeyval.set(`image-${i}`, this.pads[dragSourceIndex].image);
+				this.pads[i] = this.pads[this.dragSourceIndex]
+				images[i] = loadImage(this.pads[this.dragSourceIndex].image)
+				idbKeyval.set(`image-${i}`, this.pads[this.dragSourceIndex].image);
 
 				// Clear source pad
-				this.pads[dragSourceIndex] = { ...this.pads[dragSourceIndex], image: null }
-				images[dragSourceIndex] = null
-				idbKeyval.set(`image-${dragSourceIndex}`, null);
+				this.pads[this.dragSourceIndex] = { ...this.pads[this.dragSourceIndex], image: null }
+				images[this.dragSourceIndex] = null
+				idbKeyval.set(`image-${this.dragSourceIndex}`, null);
 
-				dragSourceIndex = null
+				this.dragSourceIndex = null
 			}
 
 
@@ -144,12 +168,13 @@ const $ui = new Vue({
 								// It's already a data url (sometimes happens on Google Images)
 								this.setPadImageDataUrlAndUpdate(i + itemI, url)
 							} else {
-								// It's a normal, remote url
+								// It's a normal remote image
 								const response = await fetch(url)
 								const blob = await response.blob()
-								const dataUrl = await readFileAsDataUrl(blob)
+								const dataUrl = await readFileOrBlobAsDataUrl(blob)
 								console.log(dataUrl)
 
+								// Remote gif, split it into frames
 								if (dataUrl.includes('data:image/gif')) {
 									gifFrames({ url: dataUrl, frames: 'all', outputType: "canvas", cumulative: true }).then(frameData => {
 										frameData.forEach(async (frame, frameI) => {
@@ -172,7 +197,7 @@ const $ui = new Vue({
 
 						// Read each frame separately
 						if (item.type == "image/gif") {
-							const dataUrl = await readFileAsDataUrl(file)
+							const dataUrl = await readFileOrBlobAsDataUrl(file)
 							gifFrames({ url: dataUrl, frames: 'all', outputType: "canvas", cumulative: true }).then(frameData => {
 								frameData.forEach(async (frame, frameI) => {
 									const img = frame.getImage()
@@ -182,9 +207,9 @@ const $ui = new Vue({
 							});
 						}
 
-						// Read only one frame
+						// Read only one frame, file formats that p5 accepts
 						else if (["image/jpeg", "image/png"].includes(item.type)) {
-							const dataUrl = await readFileAsDataUrl(file)
+							const dataUrl = await readFileOrBlobAsDataUrl(file)
 							this.setPadImageDataUrlAndUpdate(i + itemI, dataUrl)
 						}
 
@@ -194,30 +219,6 @@ const $ui = new Vue({
 					}
 				});
 			}
-
-
-
-			// else if (ev.dataTransfer.items.length > 0) {
-			// 	Array.from(ev.dataTransfer.items).forEach((item, fileI) => {
-			// 		itemn.getAsString(url => {
-			// 			const reader = new FileReader();
-			// 			reader.onloadend = async () => {
-			// 				// console.log('RESULT', reader.result)
-			// 				this.pads[i + fileI].image = reader.result
-			// 				images[i + fileI] = loadImage(reader.result)
-			// 				idbKeyval.set(`image-${i + fileI}`, reader.result);
-			// 				this.$forceUpdate()
-			// 			}
-
-			// 			reader.readAsDataURL(item);
-			// 		});
-
-
-			// 	})
-			// }
-
-
-
 
 			this.pads.forEach(pad => {
 				pad.justTriggered = false
@@ -236,7 +237,7 @@ const $ui = new Vue({
 
 
 		padPressed(i) {
-			if (!dragSourceIndex) {
+			if (!this.dragSourceIndex) {
 				this.triggerPad(i)
 				this.pads[i].justTriggered = true
 			}
@@ -248,22 +249,24 @@ const $ui = new Vue({
 
 		triggerPad(i) {
 			if (images[i]) {
+				// 'Drawing' with the mouse
 				if (mouseIsPressed) {
 					imageMode(CENTER)
 					image(images[i], mouseX, mouseY, this.size, images[i].height * this.size / images[i].width)
-				} else {
+				}
+				// Normal, stretched, full-screen
+				else {
 					imageMode(CORNER)
-
 					image(images[i], 0, 0, WIDTH, HEIGHT)
 				}
-
 			}
 		},
 
+		// Needs to be a Vue method because it's used in the template
 		getNoteNameAndOctave(midiNoteNum) {
 			let octave = Math.floor((midiNoteNum / 12)) - 2;
 			let note = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"][midiNoteNum % 12]
-			return `${octave} - ${note}`
+			return `${note}${octave}`
 		},
 
 		willBeDroppedIn(i) {
@@ -277,12 +280,6 @@ const $ui = new Vue({
 
 
 
-// MIDI ========================================
-// =============================================
-
-
-
-
 
 // UTILITIES =======================================
 // =================================================
@@ -291,8 +288,7 @@ function clamp(num, min, max) {
 }
 
 
-
-async function readFileAsDataUrl(something) {
+async function readFileOrBlobAsDataUrl(something) {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onloadend = async () => {

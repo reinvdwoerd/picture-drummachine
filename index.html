@@ -24,16 +24,18 @@
 			<select class="inputs" @change="onMidiInputChange">
 				<option v-for="input in inputs" :selected="input.name == currentMidiInput.name">{{input.name}}</option>
 			</select>
+
+			<input type="range" min="2" max="18" @input="setGridSize($event)" :value="gridColumns">
 		</main>
 
 		<div class="ui">
-			<div class="pads">
+			<div class="pads" :style="gridColumnsStyle">
 				<div class="pad" :class="{'just-triggered': pad.justTriggered}" v-for="(pad, i) of pads"
 					@drop="dropHandler(i, $event)" @dragstart="dragStartHandler(i)"
 					@dragover="dragOverHandler(i, $event)" @pointerdown="padPressed(i)" @pointerup="padReleased(i)">
 
 					<img v-if="pad.image" :src="pad.image" />
-					<div v-else></div>
+					<div v-else class="placeholder"></div>
 
 					<span class="note">{{getNoteNameAndOctave(i)}}</span>
 				</div>
