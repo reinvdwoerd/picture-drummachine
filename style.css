@@ -30,35 +30,19 @@ canvas:hover {
 }
 
 main {
-	/* display: flex; */
 	flex-direction: column;
-	/* padding: 50px; */
 	width: 100%;
 	background: #000000b0;
-	/* height: 500px; */
 	top: 0;
-	/* position: sticky; */
-	/* flex-direction: column; */
-	/* transition: opacity 0.2s; */
-	/*   position: fixed; */
 }
 
 main.half-transparent {
 	opacity: 0.5;
 }
 
-.pose>.name {
-	font-weight: bold;
-	margin-top: 20px;
-	display: grid;
-	/* grid-column: 1 / span 3 !important; */
-	grid-template-columns: 260px repeat(4, 1fr);
-}
 
 .midi {
 	padding: 50px;
-	/* padding-bottom: 100px; */
-	/* margin-top: 57vw; */
 	padding-top: 0;
 	z-index: 2;
 	position: relative;
@@ -177,7 +161,7 @@ header {
 	align-items: center;
 	flex-direction: column;
 	grid-template-rows: 2fr 1fr;
-	padding-bottom: 5px;
+	/* padding-bottom: 5px; */
 	font-weight: bold;
 }
 
@@ -197,19 +181,26 @@ input[type="range"] {
 }
 
 .pad:hover {
-	background: #eee;
+	border-color: black;
 }
 
-.pad.just-triggered {
+.pad.just-triggered,
+.pad.just-triggered .note {
 	background: cyan;
 }
 
-.pad:not(.just-triggered):not(:hover) {
+
+.pad:not(.just-triggered),
+.pad:not(.just-triggered) .note {
 	transition: background .25s;
 }
 
 .pad .note {
 	text-align: center;
+	width: 100%;
+	padding-bottom: 3px;
+	padding-top: 3px;
+	background-color: #eee;
 }
 
 canvas:hover {}
@@ -231,5 +222,3 @@ canvas:hover {}
 select.inputs {
 	order: 2;
 }
-
-html {}
