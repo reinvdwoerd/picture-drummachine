@@ -139,15 +139,19 @@ const $ui = new Vue({
 			 * (prevent dropping on the same pad)
 			 */
 			if (this.dragSourceIndex !== null && i != this.dragSourceIndex) {
-				// Assign source pad to target pad
-				this.pads[i] = this.pads[this.dragSourceIndex]
-				images[i] = loadImage(this.pads[this.dragSourceIndex].image)
-				idbKeyval.set(`image-${i}`, this.pads[this.dragSourceIndex].image);
+				let tempPadSource = this.pads[this.dragSourceIndex]
+				let tempPadTarget = this.pads[i]
 
-				// Clear source pad
-				this.pads[this.dragSourceIndex] = { ...this.pads[this.dragSourceIndex], image: null }
-				images[this.dragSourceIndex] = null
-				idbKeyval.set(`image-${this.dragSourceIndex}`, null);
+				// Assign source pad to target pad, target pad to source pad
+				this.pads[i] = tempPadSource
+				this.pads[this.dragSourceIndex] = tempPadTarget
+
+				images[i] = loadImage(tempPadSource.image)
+				idbKeyval.set(`image-${i}`, tempPadSource.image);
+
+				images[this.dragSourceIndex] = loadImage(tempPadTarget.image)
+				idbKeyval.set(`image-${this.dragSourceIndex}`, tempPadTarget.image);
+
 
 				this.dragSourceIndex = null
 			}
