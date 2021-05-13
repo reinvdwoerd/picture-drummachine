@@ -16,6 +16,10 @@ async function setup() {
 	context.webkitImageSmoothingEnabled = false;
 	context.msImageSmoothingEnabled = false;
 	context.imageSmoothingEnabled = false;
+	// canvas.elt.onclick = () => {
+	// 	canvas.elt.fullscreen()
+	// }
+
 	background(0)
 	noLoop()
 }
@@ -108,13 +112,10 @@ const $ui = new Vue({
 		},
 
 		moveGutter(e) {
-			console.log(e)
 			if (this.draggingGutter) {
 				if (matchMedia("(min-aspect-ratio: 1/1)").matches) {
 					const percent = e.clientX / innerWidth
-					console.log(percent)
 					this.gutterPercent = percent
-
 					localStorage.setItem('gutterPercent', percent)
 				}
 			}
