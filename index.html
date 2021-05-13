@@ -14,12 +14,13 @@
 	<script src="./lib/index-min.js"></script>
 	<script src="./lib/buffer@6.0.3.js"></script>
 	<script src="./lib/gif-frames.js"></script>
+	<script src="https://unpkg.com/vue-split-grid"></script>
 	<script src="script.js" defer></script>
 </head>
 
 
 <body>
-	<div id="picture-drummachine">
+	<div id="picture-drummachine" :style="gridStyle" @pointermove="moveGutter" @pointerup="stopDraggingGutter">
 		<main id="main">
 			<div class="controls">
 				<select class="inputs" @change="onMidiInputChange">
@@ -30,8 +31,9 @@
 				<input type="range" min="2" max="14" @input="setGridSize($event)" :value="gridColumns">
 				<button @click="goFullscreen()">Go Fullscreen</button>
 			</div>
-
 		</main>
+
+		<div class="gutter" @pointerdown="startDraggingGutter"></div>
 
 		<div class="ui">
 			<div class="pads" :style="gridColumnsStyle" @pointerup="cancelDrop()">

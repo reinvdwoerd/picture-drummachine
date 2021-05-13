@@ -34,6 +34,8 @@ main {
 	padding: 15px;
 }
 
+
+
 .controls {
 	display: flex;
 	/* width: 50%; */
@@ -42,7 +44,7 @@ main {
 /* Landscape */
 @media (min-aspect-ratio: 1/1) {
 	#picture-drummachine {
-		grid-template-columns: 1fr 2fr;
+		grid-template-columns: var(--area-1) 10px var(--area-2);
 	}
 
 	main {
@@ -59,17 +61,25 @@ main {
 		flex-direction: column;
 		order: 2;
 	}
+
+	.gutter {
+		cursor: col-resize;
+	}
 }
 
 /* Portrait */
 @media (max-aspect-ratio: 1/1) {
 	#picture-drummachine {
-		grid-template-rows: max-content auto;
+		grid-template-rows: auto max-content;
 	}
 
 	.controls {
 		margin-bottom: 10px;
 		display: grid;
+	}
+
+	.gutter {
+		cursor: row-resize;
 	}
 }
 

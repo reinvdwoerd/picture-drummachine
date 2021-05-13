@@ -6,6 +6,7 @@ let WIDTH = screen.width
 let HEIGHT = screen.height
 let NUMPADS = 127
 
+Vue.use(VueSplitGrid);
 
 async function setup() {
 	canvas = createCanvas(WIDTH, HEIGHT);
@@ -14,8 +15,12 @@ async function setup() {
 	noLoop()
 }
 
+
+
 const $ui = new Vue({
 	el: '#picture-drummachine',
+	components: {
+	},
 	data: {
 		pads: [],
 
@@ -26,12 +31,17 @@ const $ui = new Vue({
 		padsDropRange: null,
 
 		size: 10,
-		gridColumns: 7
+		gridColumns: 7,
+
+		draggingGutter: false,
+		gutterPercent: 0.33
 	},
 
 	async mounted() {
 		// Restore the amount of columns, or default
 		this.gridColumns = localStorage.getItem('gridColumns') || 7
+
+
 
 		// Try to initialize midi, show alert if it's not available
 		// in this browser
@@ -72,9 +82,37 @@ const $ui = new Vue({
 				'height': map(this.gridColumns, 2, 14, 200, 0)
 			}
 		},
+
+		gridStyle() {
+			const str = `${this.gutterPercent}fr 10px ${1 - this.gutterPercent}fr`
+			console.log(str)
+			return {
+				'--area-1': `${this.gutterPercent}fr`,
+				'--area-2': `${1 - this.gutterPercent}fr`
+			}
+		}
 	},
 
 	methods: {
+		startDraggingGutter(e) {
+			this.draggingGutter = true
+		},
+
+		stopDraggingGutter(e) {
+			this.draggingGutter = false
+		},
+
+		moveGutter(e) {
+			console.log(e)
+			if (this.draggingGutter) {
+				if (matchMedia("(min-aspect-ratio: 1/1)").matches) {
+					const percent = e.clientX / innerWidth
+					console.log(percent)
+					this.gutterPercent = percent
+				}
+			}
+		},
+
 		goFullscreen() {
 			canvas.elt.requestFullscreen()
 		},
