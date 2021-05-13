@@ -1,5 +1,5 @@
 let images = {}
-let popup = {}
+let popup = null
 let canvas
 
 let WIDTH = screen.width
@@ -16,9 +16,13 @@ async function setup() {
 	context.webkitImageSmoothingEnabled = false;
 	context.msImageSmoothingEnabled = false;
 	context.imageSmoothingEnabled = false;
-	// canvas.elt.onclick = () => {
-	// 	canvas.elt.fullscreen()
-	// }
+
+	canvas.elt.onclick = () => {
+		// canvas.elt.requestFullscreen()
+		
+	}
+
+	
 
 	background(0)
 	noLoop()
@@ -125,6 +129,11 @@ const $ui = new Vue({
 			canvas.elt.requestFullscreen()
 		},
 
+		popOut() {
+			popup = window.open("./popup.html", "hello", `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,
+	width=${WIDTH/4},height=${HEIGHT/4},left=100,top=100,fullscreen=yes`);
+		},
+
 		setGridSize(event) {
 			localStorage.setItem('gridColumns', event.target.value)
 			this.gridColumns = Number(event.target.value)
@@ -192,12 +201,8 @@ const $ui = new Vue({
 				this.pads[i] = tempPadSource
 				this.pads[this.dragSourceIndex] = tempPadTarget
 
-				images[i] = loadImage(tempPadSource.image)
-				idbKeyval.set(`image-${i}`, tempPadSource.image);
-
-				images[this.dragSourceIndex] = loadImage(tempPadTarget.image)
-				idbKeyval.set(`image-${this.dragSourceIndex}`, tempPadTarget.image);
-
+				this.setImage(i, tempPadSource.image)
+				this.setImage(this.dragSourceIndex, tempPadTarget.image)
 
 				this.dragSourceIndex = null
 			}
@@ -281,14 +286,20 @@ const $ui = new Vue({
 			this.dragSourceIndex = null
 		},
 
-		setPadImageDataUrlAndUpdate(i, dataUrl) {
-			this.pads[i].image = dataUrl
-			images[i] = loadImage(dataUrl)
-			idbKeyval.set(`image-${i}`, dataUrl);
-			// console.log(dataUrl)
+		async setPadImageDataUrlAndUpdate(i, dataUrl) {
+			this.setImage(i, dataUrl)
 			this.$forceUpdate()
 		},
 
+		setImage(i, dataUrl) {
+			this.pads[i].image = dataUrl
+			images[i] = loadImage(dataUrl)
+			idbKeyval.set(`image-${i}`, dataUrl);
+
+			if (popup) {
+				popup.postMessage(["setImage", [i, dataUrl]])
+			}
+		},
 
 		padPressed(i) {
 			if (!this.dragSourceIndex) {
@@ -312,6 +323,10 @@ const $ui = new Vue({
 				else {
 					imageMode(CORNER)
 					image(images[i], 0, 0, WIDTH, HEIGHT)
+				}
+
+				if (popup) {
+					popup.postMessage(["draw", i])
 				}
 			}
 		},

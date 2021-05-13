@@ -1,29 +1,44 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/idb-keyval@5/dist/iife/index-min.js"></script>
 
+<body>
+    
+</body>
 
 <script>
     images = {}
 
-
+    document.body.requestFullscreen()
     async function setup() {
         createCanvas(screen.width, screen.height)
         background(0)
         noLoop()
 
-        for (let i = 0; i < 24; i++) {
+        for (let i = 0; i < 127; i++) {
             let restored = await idbKeyval.get(`image-${i}`);
             if (restored) {
                 images[i] = loadImage(restored)
             }
         }  
     }
+
+    addEventListener("message", event => {
+        const [command, argument] = event.data
+        if (command == "setImage") {
+            images[argument[0]] = loadImage(argument[1])
+        }
+
+        if (command == "draw") {
+            image(images[argument], 0, 0, width, height)
+        }
+    }, false);
 </script>
 
 
 <style>
     body {
         margin: 0;
+        background: #000000be;
     }
 
     canvas {
