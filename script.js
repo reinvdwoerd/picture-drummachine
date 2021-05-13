@@ -11,6 +11,11 @@ Vue.use(VueSplitGrid);
 async function setup() {
 	canvas = createCanvas(WIDTH, HEIGHT);
 	canvas.parent("main")
+	let context = canvas.elt.getContext('2d');
+	context.mozImageSmoothingEnabled = false;
+	context.webkitImageSmoothingEnabled = false;
+	context.msImageSmoothingEnabled = false;
+	context.imageSmoothingEnabled = false;
 	background(0)
 	noLoop()
 }
@@ -40,7 +45,7 @@ const $ui = new Vue({
 	async mounted() {
 		// Restore the amount of columns, or default
 		this.gridColumns = localStorage.getItem('gridColumns') || 7
-
+		this.gutterPercent = localStorage.getItem('gutterPercent') || .33
 
 
 		// Try to initialize midi, show alert if it's not available
@@ -109,6 +114,8 @@ const $ui = new Vue({
 					const percent = e.clientX / innerWidth
 					console.log(percent)
 					this.gutterPercent = percent
+
+					localStorage.setItem('gutterPercent', percent)
 				}
 			}
 		},
