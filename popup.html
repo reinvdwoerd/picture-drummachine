@@ -2,7 +2,7 @@
 <script src="https://cdn.jsdelivr.net/npm/idb-keyval@5/dist/iife/index-min.js"></script>
 
 <body>
-    
+
 </body>
 
 <script>
@@ -10,7 +10,13 @@
 
     document.body.requestFullscreen()
     async function setup() {
-        createCanvas(screen.width, screen.height)
+        let canvas = createCanvas(screen.width, screen.height)
+        let context = canvas.elt.getContext('2d');
+        context.mozImageSmoothingEnabled = false;
+        context.webkitImageSmoothingEnabled = false;
+        context.msImageSmoothingEnabled = false;
+        context.imageSmoothingEnabled = false;
+
         background(0)
         noLoop()
 
@@ -19,7 +25,7 @@
             if (restored) {
                 images[i] = loadImage(restored)
             }
-        }  
+        }
     }
 
     addEventListener("message", event => {
