@@ -134,6 +134,11 @@ const $ui = new Vue({
 	width=${WIDTH/4},height=${HEIGHT/4},left=100,top=100,fullscreen=yes`);
 		},
 
+		getHelp() {
+			window.open("./help.html", "hello", `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,
+	width=${WIDTH/4},height=${HEIGHT/2},left=100,top=100,fullscreen=false`);
+		},
+
 		setGridSize(event) {
 			localStorage.setItem('gridColumns', event.target.value)
 			this.gridColumns = Number(event.target.value)
