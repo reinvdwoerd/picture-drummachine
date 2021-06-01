@@ -136,7 +136,7 @@ const $ui = new Vue({
 
 		getHelp() {
 			window.open("./help.html", "hello", `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,
-	width=${WIDTH/4},height=${HEIGHT/2},left=100,top=100,fullscreen=false`);
+	width=550,height=650,left=100,top=100,fullscreen=false`);
 		},
 
 		setGridSize(event) {
