@@ -10,7 +10,7 @@ Vue.use(VueSplitGrid);
 
 async function setup() {
 	canvas = createCanvas(WIDTH, HEIGHT);
-	canvas.parent("main")
+	canvas.parent("#group")
 	let context = canvas.elt.getContext('2d');
 	context.mozImageSmoothingEnabled = false;
 	context.webkitImageSmoothingEnabled = false;

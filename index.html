@@ -20,35 +20,49 @@
 
 
 <body>
-	<div id="picture-drummachine" :style="gridStyle" @pointermove="moveGutter" @pointerup="stopDraggingGutter">
-		<main id="main">
-			<div class="controls">
-				<select class="inputs" @change="onMidiInputChange">
-					<option v-for="input in inputs" :selected="input.name == currentMidiInput.name">{{input.name}}
-					</option>
-				</select>
+	<div id="picture-drummachine">
+		<header class="toolbar">
+			<select class="inputs" @change="onMidiInputChange">
+				<option v-for="input in inputs" :selected="input.name == currentMidiInput.name">{{input.name}}
+				</option>
+			</select>
+			
+			
+			<button @click="getHelp()" style="margin-right: auto">Help</button>
+			
+			
+			
+			
+			<input type="range" min="2" max="14" @input="setGridSize($event)" :value="gridColumns">
+			
+		</header> 
 
-				<input type="range" min="2" max="14" @input="setGridSize($event)" :value="gridColumns">
-				<button @click="goFullscreen()">Go Fullscreen</button>
-				<button @click="popOut()">Pop out</button>
-				<button @click="getHelp()">Help</button>
-			</div>
-		</main>
-
-		<div class="gutter" @pointerdown="startDraggingGutter"></div>
-
-		<div class="ui">
-			<div class="pads" :style="gridColumnsStyle" @pointerup="cancelDrop()">
-				<div class="pad" :class="{'just-triggered': pad.justTriggered}" v-for="(pad, i) of pads"
-					@drop="dropHandler(i, $event)" @dragstart="dragStartHandler(i)"
-					@dragover="dragOverHandler(i, $event)" @pointerdown="padPressed(i)" @pointerup="padReleased(i)">
-
-					<img v-if="pad.image" :src="pad.image" />
-					<div v-else class="placeholder"></div>
-
-					<div class="note">{{getNoteNameAndOctave(i)}}</div>
+		<div class="split" :style="gridStyle" @pointermove="moveGutter" @pointerup="stopDraggingGutter">
+			<main id="main">
+				<div class="group" id="group">
+					<div class="controls">
+						<button @click="goFullscreen()">Go Fullscreen</button>
+						<button @click="popOut()" style="margin-right: auto">Pop out</button>	
+					</div>
+				</div>
+			</main>
+	
+			<div class="gutter" @pointerdown="startDraggingGutter"></div>
+	
+			<div class="ui">
+				<div class="pads" :style="gridColumnsStyle" @pointerup="cancelDrop()">
+					<div class="pad" :class="{'just-triggered': pad.justTriggered}" v-for="(pad, i) of pads"
+						@drop="dropHandler(i, $event)" @dragstart="dragStartHandler(i)"
+						@dragover="dragOverHandler(i, $event)" @pointerdown="padPressed(i)" @pointerup="padReleased(i)">
+	
+						<img v-if="pad.image" :src="pad.image" />
+						<div v-else class="placeholder"></div>
+	
+						<div class="note">{{getNoteNameAndOctave(i)}}</div>
+					</div>
 				</div>
 			</div>
 		</div>
+		
 	</div>
 </body>

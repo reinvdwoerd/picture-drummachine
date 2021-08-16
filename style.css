@@ -11,9 +11,15 @@ body {
 	top: 0;
 }
 
-#picture-drummachine {
-	display: grid;
+#picture-drummachine  {
 	height: 100vh;
+	display: grid;
+	grid-template-rows: auto auto;
+}
+
+#picture-drummachine .split {
+	display: grid;
+	height: calc(100vh - 34px);
 }
 
 canvas {
@@ -34,32 +40,39 @@ main {
 	padding: 15px;
 }
 
+main .group {
+	/* background: #00000039; */
+	flex-direction: column;
+	display: flex;
+}
 
 
 .controls {
 	display: flex;
 	/* width: 50%; */
+	grid-gap: 15px;
+order: 2;
+}
+
+canvas {
+	margin-bottom: 15px;
 }
 
 /* Landscape */
 @media (min-aspect-ratio: 1/1) {
-	#picture-drummachine {
+	#picture-drummachine .split {
 		grid-template-columns: var(--area-1) 10px var(--area-2);
 	}
 
-	main {
-		flex-direction: column;
-		display: flex;
+	main .group {
+		
 		/* align-items: flex-start; */
 	}
 
-	canvas {
-		margin-bottom: 15px;
-	}
+	
 
 	.controls {
-		flex-direction: column;
-		order: 2;
+		/* flex-direction: column; */
 	}
 
 	.gutter {
@@ -69,13 +82,13 @@ main {
 
 /* Portrait */
 @media (max-aspect-ratio: 1/1) {
-	#picture-drummachine {
+	#picture-drummachine .split {
 		grid-template-rows: auto max-content;
 	}
 
 	.controls {
-		margin-bottom: 10px;
-		display: grid;
+		/* margin-bottom: 10px; */
+		/* display: grid; */
 	}
 
 	.gutter {
@@ -122,6 +135,8 @@ main.half-transparent {
 button,
 select {
 	/* background: none; */
+	height: 100%;
+	border: 1px solid black;
 }
 
 select,
@@ -168,11 +183,14 @@ code.info {
 
 
 header {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	grid-gap: 25px;
+	/* display: grid; */
+	/* grid-template-columns: 1fr 1fr; */
+	/* grid-gap: 25px; */
 	/* margin-top: 10px; */
-	margin-bottom: 20px;
+	display: flex;
+	/* margin-bottom: 20px; */
+	padding: 5px 15px;
+	grid-gap: 15px;
 }
 
 
@@ -281,6 +299,7 @@ canvas:hover {}
 	user-select: none;
 }
 
-select.inputs {
+header select {
 	/* order: 2; */
+	/* margin-right: auto; */
 }
