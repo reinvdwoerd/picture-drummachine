@@ -46,12 +46,18 @@ main .group {
 	display: flex;
 }
 
+#softpacksix {
+	mix-blend-mode: lighten;
+	width: 125px;
+	position: absolute;
+	bottom: 20px;
+}
+
 
 .controls {
 	display: flex;
-	/* width: 50%; */
 	grid-gap: 15px;
-order: 2;
+	order: 2;
 }
 
 canvas {
@@ -82,6 +88,10 @@ canvas {
 
 /* Portrait */
 @media (max-aspect-ratio: 1/1) {
+	#softpacksix {
+		display: none;
+	}
+
 	#picture-drummachine .split {
 		grid-template-rows: auto max-content;
 	}
