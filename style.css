@@ -51,13 +51,15 @@ main .group {
 	width: 125px;
 	position: absolute;
 	bottom: 20px;
+	user-select: none;
 }
 
 
 .controls {
 	display: flex;
-	grid-gap: 15px;
+	grid-gap: 5px 15px;
 	order: 2;
+	flex-wrap: wrap;
 }
 
 canvas {
