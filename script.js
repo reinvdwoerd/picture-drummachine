@@ -98,7 +98,7 @@ const $ui = new Vue({
 
 		gridStyle() {
 			const str = `${this.gutterPercent}fr 10px ${1 - this.gutterPercent}fr`
-			console.log(str)
+			// console.log(str)
 			return {
 				'--area-1': `${this.gutterPercent}fr`,
 				'--area-2': `${1 - this.gutterPercent}fr`
@@ -136,7 +136,7 @@ const $ui = new Vue({
 
 		getHelp() {
 			window.open("./help.html", "hello", `scrollbars=no,resizable=no,status=no,location=no,toolbar=no,menubar=no,
-	width=550,height=650,left=100,top=100,fullscreen=false`);
+	width=800,height=450,left=100,top=100,fullscreen=false`);
 		},
 
 		setGridSize(event) {
